@@ -1,6 +1,11 @@
 all: Makefile.coq
 	+$(MAKE) -f Makefile.coq all
 
+COQMODULES := $(patsubst src/BellantoniCook/%.v,BellantoniCook.%,$(wildcard src/BellantoniCook/*.v))
+
+check: all
+	$(COQBIN)coqchk -silent -R src/BellantoniCook BellantoniCook $(COQMODULES)
+
 clean: Makefile.coq
 	+$(MAKE) -f Makefile.coq clean
 	rm -f Makefile.coq Makefile.coq.conf
@@ -11,4 +16,4 @@ Makefile.coq: _CoqProject
 %: Makefile.coq
 	+$(MAKE) -f Makefile.coq $@
 
-.PHONY: all clean _CoqProject Makefile
+.PHONY: all check clean _CoqProject Makefile

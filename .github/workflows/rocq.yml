@@ -1,0 +1,45 @@
+name: Rocq 9.3
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rocq-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up OCaml
+        uses: ocaml/setup-ocaml@e89b2ded52a6e13f50162220cf5fe47290162032 # v3.8.0
+        with:
+          ocaml-compiler: ocaml-base-compiler.5.3.0
+          opam-pin: false
+          cache: false
+
+      - name: Install Rocq and its standard library
+        run: opam install --yes rocq-core.9.3.0 coq-core.9.3.0 rocq-stdlib.9.2.0
+
+      - name: Verify toolchain versions
+        run: |
+          opam list --installed
+          test "$(opam exec -- ocamlc -version)" = "5.3.0"
+          test "$(opam list --installed --columns=version --short rocq-core)" = "9.3.0"
+          test "$(opam list --installed --columns=version --short rocq-runtime)" = "9.3.0"
+          test "$(opam list --installed --columns=version --short coq-core)" = "9.3.0"
+          test "$(opam list --installed --columns=version --short rocq-stdlib)" = "9.2.0"
+
+      - name: Rebuild and kernel-check all 16 modules
+        run: opam exec -- bash ci/check.sh

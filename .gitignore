@@ -1,0 +1,13 @@
+Makefile.coq
+Makefile.coq.conf
+META.bellantonicook
+META
+.Makefile.coq.d
+*.vo
+*.vos
+*.vok
+*.glob
+.*.aux
+.lia.cache
+.nia.cache
+_opam/
