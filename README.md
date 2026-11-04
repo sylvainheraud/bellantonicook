@@ -17,28 +17,21 @@ and results; it does not claim a new mathematical result. The
 [historical repository maintained by David Nowak](https://github.com/davidnowak/bellantonicook)
 remains the reference for the original development.
 
-## License notice
+## License
 
-There is a historical discrepancy: `LICENSE` contains the **CeCILL version 2.1**
-text, while the original README and `opam/opam` identify the license as
-**CeCILL-A**. This modernization records the discrepancy without resolving it
-or changing the license. The historical `LICENSE` and OPAM metadata are
-unchanged.
+BellantoniCook is distributed under the **CeCILL Free Software License
+Agreement version 2.1** (SPDX: `CECILL-2.1`). See [LICENSE](LICENSE).
 
-Both designations were already present in David Nowak's initial commit
-[`de94ed60`](https://github.com/davidnowak/bellantonicook/commit/de94ed60da2a92f3724136e525f84493579f29f7)
-of September 6, 2018: its
-[`LICENSE`](https://github.com/davidnowak/bellantonicook/blob/de94ed60da2a92f3724136e525f84493579f29f7/LICENSE)
-states CeCILL 2.1, whereas its
-[`README.md`](https://github.com/davidnowak/bellantonicook/blob/de94ed60da2a92f3724136e525f84493579f29f7/README.md)
-and [`opam/opam`](https://github.com/davidnowak/bellantonicook/blob/de94ed60da2a92f3724136e525f84493579f29f7/opam/opam)
-state CeCILL-A. No subsequent commit in the reviewed history resolves this
-discrepancy, and `LICENSE` is byte-for-byte unchanged from that initial commit.
+The `LICENSE` file has contained the full CeCILL 2.1 text since the initial
+2018 import ([`de94ed60`](https://github.com/davidnowak/bellantonicook/commit/de94ed60da2a92f3724136e525f84493579f29f7)).
+The original README and OPAM metadata instead mentioned `CeCILL-A`, which
+is not an official designation in the CeCILL license family. The 2026
+metadata correction aligns those references with the existing `LICENSE`
+file. The original license text, historical commits, and proof sources are
+unchanged; no relicensing is intended.
 
-The modernization does not select a license or relicense the project.
-A new official release remains on hold, with release notes kept as an
-unpublished draft, until the appropriate rights holders clarify the license.
-This does not prevent compilation and verification of the port.
+This alignment resolves the repository's inconsistent labels but is not
+independent evidence of both original authors' legal intentions.
 
 ## Building
 
@@ -145,7 +138,8 @@ that requires publishing the branch and inspecting the actual run.
 ### Historical version
 
 Commit `1f03b9296104646ddc2b2b4b12e35a6619c17a99` preserves the 2018 sources.
-Its README reports compatibility with Coq 8.6.0 through 8.8.1. The original
-`opam/` metadata is retained for that historical packaging; it does not describe
-installation of this Rocq 9.3 port. The build instructions above apply to this
+Its README reports compatibility with Coq 8.6.0 through 8.8.1. The historical `opam/` dependency constraints remain for the older Coq
+packaging; only the license metadata has been aligned with the existing
+`LICENSE` text. This OPAM file does not describe installation of the Rocq 9.3
+port. The build instructions above apply to this
 version. No historical Coq compiler was used to validate the port.
