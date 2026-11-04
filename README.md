@@ -1,5 +1,7 @@
 # BellantoniCook
 
+[![Rocq 9.3](https://github.com/sylvainheraud/bellantonicook/actions/workflows/rocq.yml/badge.svg?branch=master)](https://github.com/sylvainheraud/bellantonicook/actions/workflows/rocq.yml?query=branch%3Amaster)
+
 It was developed by Sylvain Heraud and David Nowak.
 
 This is a deep embedding of Bellantoni and Cook's syntactic characterization of polytime functions. We prove formally that it is correct and complete with respect to the original characterization by Cobham that required a bound to be proved manually. Compared to the paper proof by Bellantoni and Cook, we have been careful in making our proof fully constructive so that we obtain more precise bounding polynomials and more efficient translations between the two characterizations. Another difference is that we consider functions on bitstrings instead of functions on positive integers. This formalization is described in:
@@ -9,19 +11,40 @@ _A formalization of polytime functions._
 In Interactive Theorem Proving - Second International Conference, ITP 2011, Berg en Dal, The Netherlands, August 22-25, 2011. Proceedings, volume 6898 of Lecture Notes in Computer Science, pages 119--134.
 Springer, 2011.
 
+The 2026 technical modernization makes this historical development build and
+pass kernel checking with Rocq 9.3.0. It preserves the mathematical definitions
+and results; it does not claim a new mathematical result. The
+[historical repository maintained by David Nowak](https://github.com/davidnowak/bellantonicook)
+remains the reference for the original development.
+
 ## License notice
 
 There is a historical discrepancy: `LICENSE` contains the **CeCILL version 2.1**
 text, while the original README and `opam/opam` identify the license as
 **CeCILL-A**. This modernization records the discrepancy without resolving it
 or changing the license. The historical `LICENSE` and OPAM metadata are
-unchanged; the authors should clarify the designation before a release.
+unchanged.
+
+Both designations were already present in David Nowak's initial commit
+[`de94ed60`](https://github.com/davidnowak/bellantonicook/commit/de94ed60da2a92f3724136e525f84493579f29f7)
+of September 6, 2018: its
+[`LICENSE`](https://github.com/davidnowak/bellantonicook/blob/de94ed60da2a92f3724136e525f84493579f29f7/LICENSE)
+states CeCILL 2.1, whereas its
+[`README.md`](https://github.com/davidnowak/bellantonicook/blob/de94ed60da2a92f3724136e525f84493579f29f7/README.md)
+and [`opam/opam`](https://github.com/davidnowak/bellantonicook/blob/de94ed60da2a92f3724136e525f84493579f29f7/opam/opam)
+state CeCILL-A. No subsequent commit in the reviewed history resolves this
+discrepancy, and `LICENSE` is byte-for-byte unchanged from that initial commit.
+
+The modernization does not select a license or relicense the project.
+A new official release remains on hold, with release notes kept as an
+unpublished draft, until the appropriate rights holders clarify the license.
+This does not prevent compilation and verification of the port.
 
 ## Building
 
 ### Rocq 9.3.0
 
-This branch ports all 16 Coq source files to Rocq 9.3.0 and its standard
+This version ports all 16 Coq source files to Rocq 9.3.0 and its standard
 library. Install Rocq and the standard library in your chosen environment,
 with `coqc`, `coq_makefile`, and `coqchk` available on `PATH`.
 
@@ -66,8 +89,8 @@ provided explicitly and registered with Rocq. Their proof terms and types
 are preserved; registering a list `All` scheme instead would change the
 automatically generated induction principles.
 
-One parsing warning remains intentionally in `BCI.v`: the postfix
-composition notation has precedence 50. Moving it to the recommended
+One parsing warning remains intentionally in `BCI.v`: the historical postfix
+composition notation `h (nl, sl)` has precedence 50. Moving it to the recommended
 precedence 1 makes ordinary applications such as `f (projIn 0)` fail to
 parse, because the notation now expects a comma inside the parentheses.
 Its original declaration is retained, and no warnings are hidden.
@@ -125,4 +148,4 @@ Commit `1f03b9296104646ddc2b2b4b12e35a6619c17a99` preserves the 2018 sources.
 Its README reports compatibility with Coq 8.6.0 through 8.8.1. The original
 `opam/` metadata is retained for that historical packaging; it does not describe
 installation of this Rocq 9.3 port. The build instructions above apply to this
-branch. No historical Coq compiler was used to validate the port.
+version. No historical Coq compiler was used to validate the port.
