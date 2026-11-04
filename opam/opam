@@ -9,7 +9,7 @@ authors: [
 homepage: "https://github.com/davidnowak/bellantonicook"
 dev-repo: "https://github.com/davidnowak/bellantonicook.git"
 bug-reports: "https://github.com/davidnowak/bellantonicook/issues"
-license: "CeCILL-A"
+license: "CeCILL-2.1"
 build: [make]
 build-doc: [make "html"]
 install: [make "install"]
