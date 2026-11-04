@@ -1,6 +1,6 @@
 (** A library of positive multivariate polynomials *)
 
-Require Import Arith List.
+From Stdlib Require Import Arith List.
 Require Import BellantoniCook.Lib.
 
 (** * Representation of polynomials:
@@ -51,8 +51,8 @@ Lemma peval_mon_monotonic : forall m l1 l2,
 Proof.
  unfold peval_mon; intros [a xl] l1 l2 H.
  induction xl; simpl; trivial.
- rewrite !mult_assoc, !(mult_comm a), <- !mult_assoc.
- apply mult_le_compat; trivial.
+ rewrite !Nat.mul_assoc, !(Nat.mul_comm a), <- !Nat.mul_assoc.
+ apply Nat.mul_le_mono; trivial.
  apply peval_pow_monotonic; trivial.
 Qed.
 
@@ -62,7 +62,7 @@ Lemma peval_monotonic : forall p l1 l2,
 Proof.
  unfold peval; intros [ar ml] l1 l2 H.
  induction ml; simpl; trivial.
- apply plus_le_compat; trivial.
+ apply Nat.add_le_mono; trivial.
  apply peval_mon_monotonic; trivial.
 Qed.
 
@@ -74,7 +74,7 @@ Proof.
  induction pl; intros [ | i]; simpl; intros; trivial.
 Qed.
 
-Notation parity := (@fst nat (list mon)).
+Abbreviation parity := (@fst nat (list mon)).
 
 (** * Well-formedness of polynomials *)
 
@@ -304,7 +304,7 @@ Lemma peval_nth_pplus : forall pl l i n,
   peval (pplusl pl) l.
 Proof.
  induction pl; simpl; intros; case i; trivial; rewrite pplus_correct; [ omega | ].
- intros; eapply le_trans;[ apply IHpl | ].
+ intros; eapply Nat.le_trans;[ apply IHpl | ].
  omega.
 Qed.
 
@@ -375,7 +375,7 @@ Proof.
  induction ml1 as [ | m1 ml1' IH]; simpl; trivial.
  rewrite !map_app, !map_map, map_pmult_mon, plusl_app.
  rewrite map_map in IH; rewrite IH.
- rewrite mult_plus_distr_r.
+ rewrite Nat.mul_add_distr_r.
  f_equal.
  rewrite multl_plus_distr_l, map_map; trivial.
 Qed.
@@ -591,7 +591,7 @@ Proof.
  simpl; ring.
  unfold pcomp_mon' in *; simpl in *.
  rewrite pscalar_correct, pmult_correct, pmultl_correct in *.
- rewrite mult_assoc, (mult_comm a), <- mult_assoc, IHxl, pcomp_pow_correct, peval_nth.
+ rewrite Nat.mul_assoc, (Nat.mul_comm a), <- Nat.mul_assoc, IHxl, pcomp_pow_correct, peval_nth.
  destruct a0 as [x n].
  unfold peval_mon, peval_pow.
  rewrite pcst_correct; simpl; ring.
@@ -667,7 +667,7 @@ Lemma pshift_mon_correct : forall m l,
 Proof.
  unfold peval_mon; intros [a xl] l.
  induction xl; simpl in * ;trivial.
- rewrite mult_assoc, (mult_comm a), <- mult_assoc, pshift_pow_correct, IHxl; ring.
+ rewrite Nat.mul_assoc, (Nat.mul_comm a), <- Nat.mul_assoc, pshift_pow_correct, IHxl; ring.
 Qed.
 
 Lemma pshift_correct : forall p l,

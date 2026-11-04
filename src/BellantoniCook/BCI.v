@@ -1,6 +1,12 @@
-Require Import Bool Arith List.
+From Stdlib Require Import Bool Arith List.
 Require Import BellantoniCook.Lib BellantoniCook.Bitstring BellantoniCook.BC.
 
+(* Preserve the historical eliminators, which recurse only on direct
+   subterms. Rocq 9.3's automatic generator asks for a list All scheme;
+   registering one would change these eliminators' types. Their original
+   proof terms are therefore given explicitly below, with the same names,
+   arguments and registrations. The nested induction lemmas are unchanged. *)
+Unset Elimination Schemes.
 Inductive BCI : Set :=
 | zeroI  : BCI
 | projIn : nat -> BCI
@@ -10,6 +16,91 @@ Inductive BCI : Set :=
 | condI  : BCI
 | recI   : BCI -> BCI -> BCI -> BCI
 | compI  : BCI -> list BCI -> list BCI -> BCI.
+Set Elimination Schemes.
+
+Definition BCI_rect :=
+fun (P : BCI -> Type) (zeroI : P zeroI) (projIn : forall n : nat, P (projIn n)) (projIs : forall n : nat, P (projIs n))
+  (succI : forall b : bool, P (succI b)) (predI : P predI) (condI : P condI)
+  (recI : forall b : BCI, P b -> forall b0 : BCI, P b0 -> forall b1 : BCI, P b1 -> P (recI b b0 b1))
+  (compI : forall b : BCI, P b -> forall l l0 : list BCI, P (compI b l l0)) =>
+fix F (b : BCI) : P b :=
+  match b as b0 return P b0 with
+  | BCI.zeroI => zeroI
+  | BCI.projIn n => projIn n
+  | BCI.projIs n => projIs n
+  | BCI.succI b0 => succI b0
+  | BCI.predI => predI
+  | BCI.condI => condI
+  | BCI.recI b0 b1 b2 => recI b0 (F b0) b1 (F b1) b2 (F b2)
+  | BCI.compI b0 l l0 => compI b0 (F b0) l l0
+  end.
+
+Arguments BCI_rect P%_function_scope zeroI (projIn projIs succI)%_function_scope predI condI
+  (recI compI)%_function_scope b.
+Register Scheme BCI_rect as rect_dep for BCI.
+
+Definition BCI_ind :=
+fun (P : BCI -> Prop) (zeroI : P zeroI) (projIn : forall n : nat, P (projIn n)) (projIs : forall n : nat, P (projIs n))
+  (succI : forall b : bool, P (succI b)) (predI : P predI) (condI : P condI)
+  (recI : forall b : BCI, P b -> forall b0 : BCI, P b0 -> forall b1 : BCI, P b1 -> P (recI b b0 b1))
+  (compI : forall b : BCI, P b -> forall l l0 : list BCI, P (compI b l l0)) =>
+fix F (b : BCI) : P b :=
+  match b as b0 return P b0 with
+  | BCI.zeroI => zeroI
+  | BCI.projIn n => projIn n
+  | BCI.projIs n => projIs n
+  | BCI.succI b0 => succI b0
+  | BCI.predI => predI
+  | BCI.condI => condI
+  | BCI.recI b0 b1 b2 => recI b0 (F b0) b1 (F b1) b2 (F b2)
+  | BCI.compI b0 l l0 => compI b0 (F b0) l l0
+  end.
+
+Arguments BCI_ind P%_function_scope zeroI (projIn projIs succI)%_function_scope predI condI
+  (recI compI)%_function_scope b.
+Register Scheme BCI_ind as ind_dep for BCI.
+
+Definition BCI_rec :=
+fun (P : BCI -> Set) (zeroI : P zeroI) (projIn : forall n : nat, P (projIn n)) (projIs : forall n : nat, P (projIs n))
+  (succI : forall b : bool, P (succI b)) (predI : P predI) (condI : P condI)
+  (recI : forall b : BCI, P b -> forall b0 : BCI, P b0 -> forall b1 : BCI, P b1 -> P (recI b b0 b1))
+  (compI : forall b : BCI, P b -> forall l l0 : list BCI, P (compI b l l0)) =>
+fix F (b : BCI) : P b :=
+  match b as b0 return P b0 with
+  | BCI.zeroI => zeroI
+  | BCI.projIn n => projIn n
+  | BCI.projIs n => projIs n
+  | BCI.succI b0 => succI b0
+  | BCI.predI => predI
+  | BCI.condI => condI
+  | BCI.recI b0 b1 b2 => recI b0 (F b0) b1 (F b1) b2 (F b2)
+  | BCI.compI b0 l l0 => compI b0 (F b0) l l0
+  end.
+
+Arguments BCI_rec P%_function_scope zeroI (projIn projIs succI)%_function_scope predI condI
+  (recI compI)%_function_scope b.
+Register Scheme BCI_rec as rec_dep for BCI.
+
+Definition BCI_sind :=
+fun (P : BCI -> SProp) (zeroI : P zeroI) (projIn : forall n : nat, P (projIn n)) (projIs : forall n : nat, P (projIs n))
+  (succI : forall b : bool, P (succI b)) (predI : P predI) (condI : P condI)
+  (recI : forall b : BCI, P b -> forall b0 : BCI, P b0 -> forall b1 : BCI, P b1 -> P (recI b b0 b1))
+  (compI : forall b : BCI, P b -> forall l l0 : list BCI, P (compI b l l0)) =>
+fix F (b : BCI) : P b :=
+  match b as b0 return P b0 with
+  | BCI.zeroI => zeroI
+  | BCI.projIn n => projIn n
+  | BCI.projIs n => projIs n
+  | BCI.succI b0 => succI b0
+  | BCI.predI => predI
+  | BCI.condI => condI
+  | BCI.recI b0 b1 b2 => recI b0 (F b0) b1 (F b1) b2 (F b2)
+  | BCI.compI b0 l l0 => compI b0 (F b0) l l0
+  end.
+
+Arguments BCI_sind P%_function_scope zeroI (projIn projIs succI)%_function_scope predI condI
+  (recI compI)%_function_scope b.
+Register Scheme BCI_sind as sind_dep for BCI.
 
 
 Lemma BCI_ind2' :
@@ -195,16 +286,18 @@ Proof.
  case a; trivial.
 Qed.
 
-Notation O := zeroI.
-Notation S0 := (succI false).
-Notation S1 := (succI true).
-Notation P := predI.
+Abbreviation O := zeroI.
+Abbreviation S0 := (succI false).
+Abbreviation S1 := (succI true).
+Abbreviation P := predI.
 
 Notation "'If' e 'Nil' e0 'Then' e1 'Else' e2" :=
   (compI condI nil [e; e0; e1; e2]) (at level 65).
 
+(* Preserve the original precedence: level 1 would capture ordinary function
+   applications such as [f (projIn 0)]. The parsing warning is intentional. *)
 Notation "h ( nl , sl )" := (compI h nl sl) (at level 50).
 
-Notation "'#' n" := (projIn n) (at level 0).
-Notation "'$' n" := (projIs n) (at level 0).
+Notation "'#' n" := (projIn n) (at level 1, n at level 0).
+Notation "'$' n" := (projIs n) (at level 1, n at level 0).
 

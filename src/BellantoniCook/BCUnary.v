@@ -1,4 +1,4 @@
-Require Import Bool Arith Euclid List.
+From Stdlib Require Import Bool Arith Euclid List.
 Require Import BellantoniCook.Lib BellantoniCook.Bitstring BellantoniCook.BC BellantoniCook.BCLib.
 
 Fixpoint unary_preserv (e : BC) : bool :=
@@ -215,7 +215,7 @@ Qed.
   - arities: (1,1)
 *)
 
-Notation or_e := plus_e (only parsing).
+Abbreviation or_e := plus_e (only parsing).
 
 Lemma or_correct :
   forall b1 b2, bs2bool (sem or_e [bool2bs b1] [bool2bs b2]) = b1 || b2.
@@ -247,7 +247,7 @@ Opaque mult_e.
   - arities: (2,0)
 *)
 
-Notation and_e := mult_e (only parsing).
+Abbreviation and_e := mult_e (only parsing).
 
 Lemma and_correct :
   forall b1 b2, bs2bool 
@@ -280,7 +280,7 @@ Opaque minus_rev_e.
   - arities: (1,1)
 *)
 
-Notation lt_e := minus_rev_e.
+Abbreviation lt_e := minus_rev_e.
 
 Lemma lt_correct v1 v2:
   bs2bool (sem lt_e [v1] [v2]) = true ->
@@ -410,7 +410,7 @@ Opaque le_e.
   - arities: (2,0)
 *)
 
-Notation minus_e := (inv_e (from_11_to_20 minus_rev_e)) (only parsing).
+Abbreviation minus_e := (inv_e (from_11_to_20 minus_rev_e)) (only parsing).
 
 Lemma minus_correct :
   forall m n, length (sem minus_e [n; m] nil) = (length n) - (length m).
@@ -442,7 +442,7 @@ Proof.
   rewrite P_correct; unfold P.
   case_eq (  (skipn (length v1) v2) ); simpl; intros.
   contradict H.
-  apply le_not_lt.
+  apply Nat.le_ngt.
   apply skipn_nil_length; trivial.
   case b; trivial.
 Qed.
@@ -471,24 +471,21 @@ case_eq (leb (q' * y) x); intro H.
 clear IH.
 apply leb_complete in H; split; subst x; intros; trivial.
 assert (qu <= q') as H1 by omega; clear H0.
-apply le_lt_or_eq in H1.
+apply Nat.lt_eq_cases in H1.
 destruct H1; auto.
 contradict H.
-apply lt_not_le.
-apply lt_le_trans with (qu * y + y); [ omega | ].
-rewrite <- mult_succ_l.
-apply mult_le_compat_r; omega.
+apply Nat.lt_nge.
+apply Nat.lt_le_trans with (qu * y + y); [ omega | ].
+rewrite <- Nat.mul_succ_l.
+apply Nat.mul_le_mono_r; omega.
 apply leb_complete_conv in H; split; intros; subst.
 assert (q'=qu \/ q'>qu) as [H3 | H3]; subst; omega.
 assert (S q' = qu \/ S q' < qu) as [H4 | H4] by omega; subst.
 contradict H.
-apply le_not_lt; simpl; omega.
+apply Nat.le_ngt; simpl; omega.
 contradict H4.
-apply le_not_lt.
-apply mult_S_le_reg_l with (Peano.pred y).
-rewrite <- S_pred with (m:=0), mult_comm, (mult_comm y (S q')).
-simpl; omega.
-omega.
+apply Nat.le_ngt.
+nia.
 Qed.
 
 Definition div (x y:nat) : nat := div' (S x) y x.
@@ -501,10 +498,10 @@ generalize (div'_coq_correct (S x) x y Hy).
 destruct (quotient y Hy x) as (q & r & H1 & H2); simpl.
 intros [H3 _].
 apply H3; subst x.
-apply le_gt_S.
-apply le_trans with (q*y); [ | omega ].
-rewrite <- (mult_1_r q) at 1.
-apply mult_le_compat_l; omega.
+apply Nat.lt_succ_r.
+apply Nat.le_trans with (q*y); [ | omega ].
+rewrite <- (Nat.mul_1_r q) at 1.
+apply Nat.mul_le_mono_l; omega.
 Qed.
 
 Definition div'_e : BC :=

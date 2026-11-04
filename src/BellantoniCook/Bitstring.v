@@ -1,7 +1,7 @@
-Require Import Bool Arith Div2 List.
+From Stdlib Require Import Bool Arith PeanoNat List.
 Require Import BellantoniCook.Lib.
 
-Notation bs := (list bool).
+Abbreviation bs := (list bool).
 
 Definition unary (v : bs) := forallb id v.
 
@@ -88,7 +88,7 @@ Lemma bs2nat_tl : forall v, bs2nat (tl v) = div2 (bs2nat v).
 Proof.
  destruct v; simpl; [ trivial | ].
  replace (bs2nat v + (bs2nat v + 0)) with (2 * bs2nat v) by omega.
- case b;[ rewrite div2_double_plus_one | rewrite div2_double]; trivial.
+ case b;[ rewrite Nat.div2_succ_double | rewrite Nat.div2_double]; trivial.
 Qed.
 
 Lemma bs2nat_nat2bs : forall n, bs2nat (nat2bs n) = n.

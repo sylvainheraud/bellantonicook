@@ -1,4 +1,4 @@
-Require Import Bool Arith List.
+From Stdlib Require Import Bool Arith List.
 Require Import BellantoniCook.Lib BellantoniCook.MultiPoly BellantoniCook.Cobham BellantoniCook.CobhamLib BellantoniCook.CobhamUnary BellantoniCook.BC.
 
 Definition Pred : Cobham :=
@@ -46,7 +46,7 @@ Lemma move_arg_inf n i j e :
   arity (move_arg n i j e) = ok_arity n.
 Proof.
   simpl; intros.
-  rewrite H0, length_move_forward, map_length, seq_length, <- beq_nat_refl; simpl.
+  rewrite H0, length_move_forward, length_map, length_seq, <- beq_nat_refl; simpl.
   case_eq (forallb (fun e0 : Arity => arity_eq e0 (ok_arity n))
       (map arity (move_forward i j (map (Proj n) (seq 0 n)) (Proj n 0)))); trivial.
   intros Hall.
@@ -68,9 +68,9 @@ Proof.
   contradict H2.
   omega.
   rewrite leb_correct by omega; trivial.
-  rewrite seq_length.
+  rewrite length_seq.
   omega.
-  rewrite map_length, seq_length; trivial.
+  rewrite length_map, length_seq; trivial.
 Qed.
 
 Lemma rec_bounded_move_arg : forall n i j e,
@@ -104,9 +104,9 @@ Lemma arity_dummies e n n' :
   arity (dummies n' n e) = ok_arity (n + n').
 Proof.
 destruct n' as [ | n']; intro H; simpl; rewrite H; simpl.
-rewrite plus_0_r.
+rewrite Nat.add_0_r.
 trivial.
-rewrite map_length, seq_length, <- beq_nat_refl, <- beq_nat_refl.
+rewrite length_map, length_seq, <- beq_nat_refl, <- beq_nat_refl.
 simpl.
 case_eq (forallb (fun e0 : Arity => arity_eq e0 (ok_arity (S (n' + n))))
       (map arity (map (Proj (S (n' + n))) (seq 1 n')))); intro Hall.
@@ -204,7 +204,7 @@ Proof.
   rewrite <- beq_nat_refl; simpl; trivial.
   pWF; eapply pWF_poly_BC; eauto.
 
-  elimtype False.
+  exfalso.
   apply eq_true_false_abs in H5; trivial; clear H5.
   apply forallb_forall; intros.
   apply in_map_iff in H5.
@@ -217,7 +217,7 @@ Proof.
   apply in_seq_iff in H6; simpl.
   rewrite leb_correct; simpl.
   rewrite <- beq_nat_refl; trivial.
-  rewrite Min.min_l in H6; omega.
+  rewrite Nat.min_l in H6; omega.
   simpl in H5.
   destruct H5; subst; simpl.
   rewrite <- beq_nat_refl; trivial.
@@ -229,20 +229,20 @@ Proof.
   rewrite leb_correct; simpl.
   rewrite <- beq_nat_refl; trivial.
   omega.
-  rewrite app_length, firstn_length, map_length, seq_length; simpl.
-  rewrite skipn_length, map_length, seq_length; simpl.
-  rewrite Min.min_l; omega.
+  rewrite length_app, length_firstn, length_map, length_seq; simpl.
+  rewrite skipn_length, length_map, length_seq; simpl.
+  rewrite Nat.min_l; omega.
   
   rewrite H2.
-  rewrite app_length.
-  repeat rewrite map_length.
+  rewrite length_app.
+  repeat rewrite length_map.
   rewrite <- beq_nat_refl; simpl.
   case_eq ( forallb 
     (fun e : Arity => arity_eq e (ok_arity (n + s)))
     (map arity
       (map (fun e : BC => dummies n s (BC_to_Cobham n 0 e)) rl ++
         map (BC_to_Cobham n s) tl))); intros; trivial.
-  elimtype False.
+  exfalso.
   apply eq_true_false_abs in H5; trivial.
   eapply forallb_forall; intros.
   apply in_map_iff in H6.
@@ -256,7 +256,7 @@ Proof.
   subst.
   erewrite arity_dummies.
   simpl.
-  rewrite plus_comm, <- beq_nat_refl; trivial.
+  rewrite Nat.add_comm, <- beq_nat_refl; trivial.
   rewrite (plus_n_O n) at 2.
   apply H3; trivial.
   apply in_map_iff in H6.
@@ -309,8 +309,8 @@ Proof.
   rewrite firstn_app, skipn_app; trivial.
   rewrite Hmf.
   case a; f_equal; simpl.
-  simpl; rewrite app_length; trivial.
-  simpl; rewrite app_length; trivial.
+  simpl; rewrite length_app; trivial.
+  simpl; rewrite length_app; trivial.
   rewrite map_app.
   do 2 rewrite map_map.
   assert (HA : map (fun ne : BC => sem ne xl nil) rl = 
@@ -323,14 +323,14 @@ Proof.
   f_equal; subst; trivial.
   rewrite firstn_app.
   apply app_nil_r.
-  rewrite app_length; omega.
+  rewrite length_app; omega.
   assert (map (fun se : BC => sem se xl yl) tl =
     map (fun x : BC => Sem (BC_to_Cobham (length xl) (length yl) x) (xl ++ yl)) tl).
   apply map_ext2; intros; subst.
   eapply H4; trivial.
   rewrite H2, HA, H7; subst; trivial.
-  rewrite map_length; trivial.
-  rewrite map_length; trivial.
+  rewrite length_map; trivial.
+  rewrite length_map; trivial.
 Qed.
 
 Lemma app_prop : forall {A} (l2 l1 : list A) (P : A -> Prop),
@@ -358,7 +358,7 @@ Proof.
  tauto.
  tauto.
  tauto.
- apply app_ass.
+ symmetry; exact (app_assoc l1 [a] l2).
 Qed.
 
 Lemma plusl_monotonic : forall l (f1 f2 : nat -> nat),
@@ -367,7 +367,7 @@ Lemma plusl_monotonic : forall l (f1 f2 : nat -> nat),
 Proof.
  induction l; simpl; intros.
  trivial.
- apply plus_le_compat.
+ apply Nat.add_le_mono.
  apply H.
  apply IHl.
  trivial.
@@ -408,7 +408,7 @@ Proof.
   repeat rewrite Nat.max_idempotent.
   rewrite parity_psum.
   rewrite max_l; [ | omega].
-  rewrite plus_Sn_m.
+  rewrite Nat.add_succ_l.
   rewrite <- beq_nat_refl; trivial.
 
   intros.
@@ -424,7 +424,7 @@ Proof.
   rewrite <- H6.
   clear H6.
 
-  rewrite <- plus_Sn_m in H5.
+  rewrite <- Nat.add_succ_l in H5.
   apply length_plus_ex in H5.
   destruct H5 as [l1 [l2 [Hl1 [Hl2 Hl]]]].
   rewrite Hl.
@@ -457,12 +457,12 @@ Proof.
   rewrite H5 in *; simpl in *.
 
   erewrite <- BC_to_Cobham_correct; eauto.
-  eapply le_trans.
+  eapply Nat.le_trans.
   eapply polymax_bounding; eauto.
-  rewrite plus_comm.
-  apply plus_le_compat.
+  rewrite Nat.add_comm.
+  apply Nat.add_le_mono.
   rewrite psum_correct.
-  eapply le_trans.
+  eapply Nat.le_trans.
   apply maxl_le_plusl.
   rewrite map_nth_seq.
   simpl.
@@ -471,17 +471,17 @@ Proof.
   rewrite skipn_app.
   trivial.
   simpl.
-  rewrite map_length.
-  rewrite app_length.
+  rewrite length_map.
+  rewrite length_app.
   rewrite Hl1b, Hl2; omega.
-  rewrite plus_0_r.
+  rewrite Nat.add_0_r.
   rewrite <- (app_nil_r (map (@length _) l1b)) at 1.
   rewrite map_app.
   erewrite parity_correct.
-  apply le_refl.
+  apply Nat.le_refl.
   eapply pWF_poly_BC; eauto.
   erewrite arity_poly_BC; eauto.
-  rewrite map_length; trivial.
+  rewrite length_map; trivial.
 
   remember ( sem_Rec (Sem (BC_to_Cobham n s g))
     (Sem (move_arg (S (S (n + s))) 1 n (BC_to_Cobham (S n) (S s) h0)))
@@ -507,18 +507,18 @@ Proof.
 
   apply Nat.max_lub.
 
-  eapply le_trans.
+  eapply Nat.le_trans.
   eapply IHl0.
   rewrite psum_correct.
   rewrite psum_correct.
-  apply plus_le_compat.
+  apply Nat.add_le_mono.
   apply plusl_monotonic.
   intros; simpl.
   destruct x; trivial.
   omega.
-  apply plus_le_compat_l.
-  apply mult_le_compat_l.
-  apply plus_le_compat.
+  apply Nat.add_le_mono_l.
+  apply Nat.mul_le_mono_l.
+  apply Nat.add_le_mono.
   apply peval_monotonic; intros; simpl.
   destruct i; omega.
   apply peval_monotonic; intros; simpl.
@@ -526,24 +526,24 @@ Proof.
 
   apply le_plus_trans.
   rewrite psum_correct.
-  eapply le_trans.
+  eapply Nat.le_trans.
   apply maxl_le_plusl.
   rewrite map_nth_seq.
   simpl.
   rewrite H5, <- Hl1b; simpl.
   rewrite map_app.
-  erewrite <- map_length.
+  erewrite <- length_map.
   rewrite skipn_app.
   trivial.
   simpl.
-  rewrite map_length.
+  rewrite length_map.
   rewrite H5, <- Hl1b, <- Hl2; simpl.
-  rewrite app_length; ring. 
+  rewrite length_app; ring.
 
   case a.
 
   erewrite <- BC_to_Cobham_correct; simpl; eauto.
-  eapply le_trans.
+  eapply Nat.le_trans.
   eapply polymax_bounding; eauto.
   assert ( peval (poly_BC (S n) h1) (map (@length _) (l0 :: l1a ++ l1b)) <=  
     peval (poly_BC (S n) h1)  (S (length l0) :: map (@length _) ((l1a ++ l1b) ++ l2))).
@@ -559,7 +559,7 @@ Proof.
   rewrite <- Hl1b, H5; simpl; trivial.
 
   erewrite <- BC_to_Cobham_correct; simpl; eauto.
-  eapply le_trans.
+  eapply Nat.le_trans.
   eapply polymax_bounding; eauto.
   assert ( peval (poly_BC (S n) h0) (map (@length _) (l0 :: l1a ++ l1b)) <=  
     peval (poly_BC (S n) h0)  (S (length l0) :: map (@length _) ((l1a ++ l1b) ++ l2))).
@@ -574,8 +574,8 @@ Proof.
   omega.
   rewrite <- Hl1b, H5; simpl; trivial.
 
-  rewrite <- Hl1b, <- Hl2, H5, app_length; simpl; trivial.
-  rewrite <- Hl1b, <- Hl2, H5, app_length; simpl; trivial.
+  rewrite <- Hl1b, <- Hl2, H5, length_app; simpl; trivial.
+  rewrite <- Hl1b, <- Hl2, H5, length_app; simpl; trivial.
 
   pWF; eapply pWF_poly_BC; eauto.
 

@@ -1,7 +1,37 @@
 (** * Addendum to the standard library of Coq *)
 
-Require Import Bool Arith Div2 List Permutation.
-Require Export Omega.
+From Stdlib Require Import Bool Arith PeanoNat List Permutation Program.Tactics.
+Abbreviation div2 := Nat.div2.
+Abbreviation beq_nat := Nat.eqb.
+From Stdlib Require Export Lia.
+Ltac omega := lia.
+Tactic Notation "cutrewrite" constr(equality) :=
+  match equality with
+  | ?lhs = ?rhs =>
+      cut equality; [ let H := fresh "Heq" in intro H; rewrite H; clear H | ]
+  end.
+
+(** Compatibility names for the historical standard-library interface.
+    These abbreviations and proved identities preserve the original terms. *)
+Abbreviation beq_nat_true := Nat.eqb_eq.
+Abbreviation beq_nat_false := Nat.eqb_neq.
+Abbreviation div2_double := Nat.div2_double.
+Abbreviation div2_double_plus_one := Nat.div2_succ_double.
+Abbreviation even := Nat.Even_alt.
+Abbreviation odd := Nat.Odd_alt.
+Abbreviation even_O := Nat.Even_alt_O.
+
+Lemma beq_nat_refl n : true = beq_nat n n.
+Proof. symmetry; apply Nat.eqb_refl. Qed.
+Lemma minus_n_O n : n = n - 0.
+Proof. lia. Qed.
+Lemma plus_n_O n : n = n + 0.
+Proof. lia. Qed.
+Lemma le_plus_trans n m p : n <= m -> n <= m + p.
+Proof. lia. Qed.
+Lemma plus_n_Sm n m : S (n + m) = n + S m.
+Proof. lia. Qed.
+
 
 Global Obligation Tactic := idtac.
 
@@ -118,8 +148,8 @@ Lemma skipn_plus :
   forall A j i (l:list A), skipn (i+j) l = skipn i (skipn j l).
 Proof.
  induction j as [ | j IH]; simpl; intros.
- rewrite plus_0_r; trivial.
- rewrite <- plus_Snm_nSm.
+ rewrite Nat.add_0_r; trivial.
+ rewrite <- Nat.add_succ_comm.
  case l.
  rewrite !skipn_nil; simpl; trivial; omega.
  simpl; trivial.
@@ -224,8 +254,8 @@ Proof.
  induction len; simpl; intros.
  apply skipn_nil; simpl; omega.
  case n; simpl; intros.
- rewrite plus_0_r; trivial.
- rewrite <- plus_Snm_nSm; apply IHlen.
+ rewrite Nat.add_0_r; trivial.
+ rewrite <- Nat.add_succ_comm; apply IHlen.
 Qed.
 
 Lemma in_seq_iff : forall x len start,
@@ -279,7 +309,7 @@ Proof.
  intros.
  exists (firstn n1 l).
  exists (skipn n1 l).
- rewrite firstn_length, min_l, length_skipn, firstn_skipn; repeat split; omega.
+ rewrite length_firstn, min_l, length_skipn, firstn_skipn; repeat split; omega.
 Qed.
 
 Lemma tl_app : forall A (l1 l2 : list A),
@@ -325,7 +355,7 @@ Proof.
  rewrite <- map_seq_nth with (d := d).
  destruct m; simpl.
  apply map_ext; intros.
- rewrite <- minus_n_O; trivial.
+ rewrite Nat.sub_0_r; trivial.
  rewrite map_seq_shift with (n := S m); auto.
 Qed.
 
@@ -336,7 +366,7 @@ Proof.
  rewrite <- firstn_skipn with (l := seq x (y + z)) (n := y).
  f_equal.
  rewrite firstn_seq.
- rewrite Min.min_l; auto.
+ rewrite Nat.min_l; auto.
  omega.
  rewrite skipn_seq.
  f_equal; omega.
@@ -380,7 +410,7 @@ Fixpoint power (m n:nat) : nat :=
 Lemma power_le_l : forall a b n, a <= b -> power a n <= power b n.
 Proof.
  induction n; simpl; intros; trivial.
- apply mult_le_compat; tauto.
+ apply Nat.mul_le_mono; tauto.
 Qed.
 
 Definition plusl (l:list nat) : nat :=
@@ -401,7 +431,7 @@ Lemma plusl_compat : forall A (l : list A) f g,
   plusl (map f l) <= plusl (map g l).
 Proof.
  induction l; simpl; intros; auto.
- apply plus_le_compat; auto.
+ apply Nat.add_le_mono; auto.
 Qed. 
 
 Definition multl (l:list nat) : nat :=
@@ -432,7 +462,7 @@ Proof.
  tauto.
  destruct H; subst.
  apply Nat.le_max_l.
- eapply le_trans; [ | apply Nat.le_max_r]; tauto.
+ eapply Nat.le_trans; [ | apply Nat.le_max_r]; tauto.
 Qed.
 
 Lemma maxl_map A l (f : A -> nat) n :
@@ -518,7 +548,7 @@ Lemma le_maxl_cons l m n :
  n <= maxl l -> n <= maxl (m :: l).
 Proof.
  induction l; simpl; intros;[ omega | ].
- eapply le_trans.
+ eapply Nat.le_trans.
  apply Nat.le_max_r.
  apply Nat.max_le_compat_l; trivial.
 Qed.
@@ -531,7 +561,7 @@ induction l as [ | a l IH]; intros [ | i] H; simpl.
 omega.
 omega.
 auto with arith.
-eapply le_trans.
+eapply Nat.le_trans.
 apply IH.
 exact H.
 apply Nat.le_max_r.
@@ -706,8 +736,8 @@ Lemma length_move_forward :
 Proof.
 unfold move_forward.
 intros.
-do 2 rewrite app_length.
-do 2 rewrite firstn_length.
+do 2 rewrite length_app.
+do 2 rewrite length_firstn.
 rewrite min_l.
 rewrite min_l.
 change (length (nth i l d :: skipn (S (i + j)) l)) with (1 + length (skipn (S (i + j)) l)).

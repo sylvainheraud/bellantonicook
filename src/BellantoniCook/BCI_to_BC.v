@@ -1,4 +1,4 @@
-Require Import Arith List.
+From Stdlib Require Import Arith List.
 Require Import BellantoniCook.Lib BellantoniCook.Bitstring BellantoniCook.BC BellantoniCook.BCI.
 
 Fixpoint conv n s (e : BCI) : BC :=
@@ -187,58 +187,58 @@ Proof.
   contradict H2; omega.
   case_eq (leb i n0); intros; trivial.
   apply leb_complete_conv in H3.
-  elimtype False; omega.
+  exfalso; omega.
 
   injection H1; intros; subst.
   case_eq (n + s); intros.
   contradict H2; omega.
   case_eq (leb (n + i) n0); intros; trivial.
   apply leb_complete_conv in H3.
-  elimtype False; omega.
+  exfalso; omega.
   
   injection H1; intros; subst.
   case_eq (n + s); intros.
   simpl.
-  elimtype False; omega.
+  exfalso; omega.
   case_eq (leb n n0); intros; trivial; simpl.
   do 2 rewrite <- beq_nat_refl; simpl; trivial.
   apply leb_complete_conv in H3.
-  elimtype False; omega.
+  exfalso; omega.
 
   injection H1; intros; subst.
   case_eq (n + s); intros.
   simpl.
-  elimtype False; omega.
+  exfalso; omega.
   case_eq (leb n n0); intros; trivial; simpl.
   do 2 rewrite <- beq_nat_refl; simpl; trivial.
   apply leb_complete_conv in H3.
-  elimtype False; omega.
+  exfalso; omega.
 
   injection H1; intros; subst.
   case_eq (n + s); intros.
-  elimtype False; omega.
+  exfalso; omega.
   case_eq (leb n n0); intros; trivial; simpl.
   repeat rewrite <- beq_nat_refl; simpl; trivial.
   destruct n0; simpl.
-  elimtype False; omega.
+  exfalso; omega.
   case_eq (leb n n0); intros; trivial; simpl.
   repeat rewrite <- beq_nat_refl; simpl; trivial.
   destruct n0; simpl.
-  elimtype False; omega.
+  exfalso; omega.
   case_eq (leb n n0); intros; trivial; simpl.
   repeat rewrite <- beq_nat_refl; simpl; trivial.
   destruct n0; simpl.
-  elimtype False; omega.
+  exfalso; omega.
   case_eq (leb n n0); intros; trivial; simpl.
   repeat rewrite <- beq_nat_refl; simpl; trivial.
   apply leb_complete_conv in H6.
-  elimtype False; omega.
+  exfalso; omega.
   apply leb_complete_conv in H5.
-  elimtype False; omega.
+  exfalso; omega.
   apply leb_complete_conv in H4.
-  elimtype False; omega.
+  exfalso; omega.
   apply leb_complete_conv in H3.
-  elimtype False; omega.
+  exfalso; omega.
 
   case_eq (inf e1); [ intros n1 s1 He1 | intros ].
   2: rewrite H2 in H1; discriminate.
@@ -256,7 +256,7 @@ Proof.
   erewrite IHe2;[ | | | eauto ]; try omega.
   erewrite IHe3;[ | | | eauto ]; try omega.
   destruct n.
-  elimtype False; omega.
+  exfalso; omega.
   replace (S n - 1) with n.
   do 4 rewrite <- beq_nat_refl; simpl; trivial.
   omega.
@@ -277,13 +277,13 @@ Proof.
   apply leb_complete in H6.
   apply beq_nat_true in H9.  
   erewrite IHe; [ | | | eauto]; try omega.
-  do 2 rewrite map_length.
+  do 2 rewrite length_map.
   do 2 rewrite <- beq_nat_refl; simpl.
   injection H3; clear H3; intros; subst.
   assert (n2 <= max n2 n4 /\ n4 <= max n2 n4).
   split.
-  apply Max.le_max_l.
-  apply Max.le_max_r.
+  apply Nat.le_max_l.
+  apply Nat.le_max_r.
   replace (forallb 
     (fun ne : BC => aeq (arities ne) (ok_arities n 0))
     (map (conv n 0) rl)) with true.
@@ -344,7 +344,7 @@ Proof.
   simpl; rewrite <- (minus_n_O i); trivial.
   case_eq (leb (S n + i) n); intros.  
   apply leb_complete in H1.
-  elimtype False; omega.
+  exfalso; omega.
   replace (S n + i - S n) with i; trivial.
   omega.
   
@@ -355,15 +355,15 @@ Proof.
   destruct vsl; simpl; trivial.
   case_eq (leb (S n0) n0); intros.
   apply leb_complete in H2.
-  elimtype False; omega.
-  rewrite minus_diag.
+  exfalso; omega.
+  rewrite Nat.sub_diag.
   destruct vsl; trivial.
 
   destruct n.
   simpl.
   erewrite hd_nth_0; trivial.
   rewrite leb_correct_conv;[ | omega].
-  rewrite minus_diag; trivial.
+  rewrite Nat.sub_diag; trivial.
   erewrite hd_nth_0; trivial.
 
   injection H1; clear H1; intros; subst.
@@ -378,13 +378,13 @@ Proof.
   destruct b; trivial.
   destruct vsl; simpl; trivial.
   rewrite leb_correct_conv;[ | omega].
-  rewrite minus_diag.
+  rewrite Nat.sub_diag.
   destruct vsl; trivial. 
   simpl.
   destruct n; trivial.
   destruct n; trivial.
   rewrite leb_correct_conv;[ | omega].
-  rewrite <- minus_Sn_m; trivial.
+  rewrite Nat.sub_succ_l; trivial.
   simpl.
   destruct l; simpl; trivial.
   destruct n; trivial.
@@ -393,8 +393,8 @@ Proof.
   simpl.
   do 3 (destruct vsl; simpl; trivial).
   rewrite leb_correct_conv;[ | omega].
-  rewrite <- minus_Sn_m; trivial.
-  rewrite minus_diag.
+  rewrite Nat.sub_succ_l; trivial.
+  rewrite Nat.sub_diag.
   do 3 (destruct vsl; simpl; trivial).
   destruct b.
   destruct n; trivial.
@@ -405,9 +405,9 @@ Proof.
   simpl.
   do 3 (destruct vsl; simpl; trivial).
   rewrite leb_correct_conv;[ | omega].
-  rewrite <- minus_Sn_m; trivial.
-  rewrite <- minus_Sn_m; trivial.
-  rewrite minus_diag.
+  rewrite Nat.sub_succ_l; trivial.
+  rewrite Nat.sub_succ_l; trivial.
+  rewrite Nat.sub_diag.
   do 3 (destruct vsl; simpl; trivial).
   omega.
   destruct n; trivial.
@@ -419,10 +419,10 @@ Proof.
   destruct n; trivial.
   do 3 (destruct vsl; simpl; trivial).
   rewrite leb_correct_conv;[ | omega].
-  rewrite <- minus_Sn_m; trivial.
-  rewrite <- minus_Sn_m; trivial.
-  rewrite <- minus_Sn_m; trivial.
-  rewrite minus_diag.
+  rewrite Nat.sub_succ_l; trivial.
+  rewrite Nat.sub_succ_l; trivial.
+  rewrite Nat.sub_succ_l; trivial.
+  rewrite Nat.sub_diag.
   do 3 (destruct vsl; simpl; trivial).
   omega.
   omega.
@@ -463,8 +463,8 @@ Proof.
   eapply (inf_list_ex _ a) in H7; trivial.
   destruct H7 as (na & sa & Ha1 & Ha2 & Ha3).
   eapply H;[ trivial | |  | apply Ha3 ].
-  apply le_trans with (2 := H1).
-  apply le_trans with (1 := Ha1).
+  apply Nat.le_trans with (2 := H1).
+  apply Nat.le_trans with (1 := Ha1).
   auto with arith.
   trivial.
   rewrite map_map.
@@ -473,8 +473,8 @@ Proof.
   eapply (inf_list_ex _ a) in H8; trivial.
   destruct H8 as (na & sa & Ha1 & Ha2 & Ha3).
   eapply H0;[ trivial | |  | apply Ha3 ].
-  apply le_trans with (2 := H1).
-  apply le_trans with (1 := Ha1).
+  apply Nat.le_trans with (2 := H1).
+  apply Nat.le_trans with (1 := Ha1).
   auto with arith.
   omega.
 Qed.

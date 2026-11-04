@@ -1,4 +1,4 @@
-Require Import Bool Arith Div2.
+From Stdlib Require Import Bool Arith PeanoNat.
 Require Import BellantoniCook.Lib BellantoniCook.Bitstring BellantoniCook.BC.
 
 (** * Zero
@@ -133,7 +133,7 @@ Global Opaque pred_e.
   - arities: (1,0)
 *)
 
-Notation div2_e := pred.
+Abbreviation div2_e := pred.
 
 Lemma div2_correct : forall v,
   bs2nat (sem pred nil [v]) = div2 (bs2nat v).

@@ -1,4 +1,4 @@
-Require Import Arith List.
+From Stdlib Require Import Arith List.
 Require Import BellantoniCook.Lib BellantoniCook.BC BellantoniCook.BCI BellantoniCook.BCI_to_BC.
 
 Fixpoint convI (e : BC) : BCI :=
@@ -110,7 +110,7 @@ Proof.
   rewrite H15; simpl; trivial.
   omega.
 
-  elimtype False.
+  exfalso.
   apply in_inf_list_err_conv in H8.
   destruct H8.
   rewrite map_map in H8.
@@ -120,7 +120,7 @@ Proof.
   decompose [and] H10.
   rewrite H8 in H14; discriminate.
 
-  elimtype False.
+  exfalso.
   apply in_inf_list_err_conv in H5.
   destruct H5.
   rewrite map_map in H5.
@@ -130,8 +130,8 @@ Proof.
   decompose [and] H9.
   rewrite H5 in H13; discriminate.
 
-  rewrite map_length; omega.
-  rewrite map_length; omega.
+  rewrite length_map; omega.
+  rewrite length_map; omega.
 Qed.
 
 Lemma convI_correct : forall e n s,

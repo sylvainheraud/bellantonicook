@@ -1,6 +1,6 @@
 (** The language of Bellantoni and Cook *)
 
-Require Import Bool Arith List.
+From Stdlib Require Import Bool Arith List.
 Require Import BellantoniCook.Lib BellantoniCook.Bitstring BellantoniCook.MultiPoly.
 
 (** * Syntax and induction principle
@@ -9,6 +9,12 @@ Require Import BellantoniCook.Lib BellantoniCook.Bitstring BellantoniCook.MultiP
     ignores the types [list BC] in the constructor [comp].
 *)
 
+(* Preserve the historical eliminators, which recurse only on direct
+   subterms. Rocq 9.3's automatic generator asks for a list All scheme;
+   registering one would change these eliminators' types. Their original
+   proof terms are therefore given explicitly below, with the same names,
+   arguments and registrations. The nested induction lemmas are unchanged. *)
+Unset Elimination Schemes.
 Inductive BC : Set :=
 | zero : BC
 | proj : nat -> nat -> nat -> BC
@@ -16,7 +22,84 @@ Inductive BC : Set :=
 | pred : BC
 | cond : BC
 | rec : BC -> BC -> BC -> BC
-| comp : nat -> nat -> BC -> list BC -> list BC -> BC.  
+| comp : nat -> nat -> BC -> list BC -> list BC -> BC.
+Set Elimination Schemes.
+
+Definition BC_rect :=
+fun (P : BC -> Type) (zero : P zero) (proj : forall n n0 n1 : nat, P (proj n n0 n1))
+  (succ : forall b : bool, P (succ b)) (pred : P pred) (cond : P cond)
+  (rec : forall b : BC, P b -> forall b0 : BC, P b0 -> forall b1 : BC, P b1 -> P (rec b b0 b1))
+  (comp : forall (n n0 : nat) (b : BC), P b -> forall l l0 : list BC, P (comp n n0 b l l0)) =>
+fix F (b : BC) : P b :=
+  match b as b0 return P b0 with
+  | BC.zero => zero
+  | BC.proj n n0 n1 => proj n n0 n1
+  | BC.succ b0 => succ b0
+  | BC.pred => pred
+  | BC.cond => cond
+  | BC.rec b0 b1 b2 => rec b0 (F b0) b1 (F b1) b2 (F b2)
+  | BC.comp n n0 b0 l l0 => comp n n0 b0 (F b0) l l0
+  end.
+
+Arguments BC_rect P%_function_scope zero (proj succ)%_function_scope pred cond (rec comp)%_function_scope b.
+Register Scheme BC_rect as rect_dep for BC.
+
+Definition BC_ind :=
+fun (P : BC -> Prop) (zero : P zero) (proj : forall n n0 n1 : nat, P (proj n n0 n1))
+  (succ : forall b : bool, P (succ b)) (pred : P pred) (cond : P cond)
+  (rec : forall b : BC, P b -> forall b0 : BC, P b0 -> forall b1 : BC, P b1 -> P (rec b b0 b1))
+  (comp : forall (n n0 : nat) (b : BC), P b -> forall l l0 : list BC, P (comp n n0 b l l0)) =>
+fix F (b : BC) : P b :=
+  match b as b0 return P b0 with
+  | BC.zero => zero
+  | BC.proj n n0 n1 => proj n n0 n1
+  | BC.succ b0 => succ b0
+  | BC.pred => pred
+  | BC.cond => cond
+  | BC.rec b0 b1 b2 => rec b0 (F b0) b1 (F b1) b2 (F b2)
+  | BC.comp n n0 b0 l l0 => comp n n0 b0 (F b0) l l0
+  end.
+
+Arguments BC_ind P%_function_scope zero (proj succ)%_function_scope pred cond (rec comp)%_function_scope b.
+Register Scheme BC_ind as ind_dep for BC.
+
+Definition BC_rec :=
+fun (P : BC -> Set) (zero : P zero) (proj : forall n n0 n1 : nat, P (proj n n0 n1))
+  (succ : forall b : bool, P (succ b)) (pred : P pred) (cond : P cond)
+  (rec : forall b : BC, P b -> forall b0 : BC, P b0 -> forall b1 : BC, P b1 -> P (rec b b0 b1))
+  (comp : forall (n n0 : nat) (b : BC), P b -> forall l l0 : list BC, P (comp n n0 b l l0)) =>
+fix F (b : BC) : P b :=
+  match b as b0 return P b0 with
+  | BC.zero => zero
+  | BC.proj n n0 n1 => proj n n0 n1
+  | BC.succ b0 => succ b0
+  | BC.pred => pred
+  | BC.cond => cond
+  | BC.rec b0 b1 b2 => rec b0 (F b0) b1 (F b1) b2 (F b2)
+  | BC.comp n n0 b0 l l0 => comp n n0 b0 (F b0) l l0
+  end.
+
+Arguments BC_rec P%_function_scope zero (proj succ)%_function_scope pred cond (rec comp)%_function_scope b.
+Register Scheme BC_rec as rec_dep for BC.
+
+Definition BC_sind :=
+fun (P : BC -> SProp) (zero : P zero) (proj : forall n n0 n1 : nat, P (proj n n0 n1))
+  (succ : forall b : bool, P (succ b)) (pred : P pred) (cond : P cond)
+  (rec : forall b : BC, P b -> forall b0 : BC, P b0 -> forall b1 : BC, P b1 -> P (rec b b0 b1))
+  (comp : forall (n n0 : nat) (b : BC), P b -> forall l l0 : list BC, P (comp n n0 b l l0)) =>
+fix F (b : BC) : P b :=
+  match b as b0 return P b0 with
+  | BC.zero => zero
+  | BC.proj n n0 n1 => proj n n0 n1
+  | BC.succ b0 => succ b0
+  | BC.pred => pred
+  | BC.cond => cond
+  | BC.rec b0 b1 b2 => rec b0 (F b0) b1 (F b1) b2 (F b2)
+  | BC.comp n n0 b0 l l0 => comp n n0 b0 (F b0) l l0
+  end.
+
+Arguments BC_sind P%_function_scope zero (proj succ)%_function_scope pred cond (rec comp)%_function_scope b.
+Register Scheme BC_sind as sind_dep for BC.
 
 Lemma BC_ind2' :
   forall P : BC -> Prop,
@@ -82,11 +165,86 @@ Qed.
     of the expression [e] if it is well formed, or an error including the arities of the subterms.
 *)
 
+(* Preserve the historical eliminators, which recurse only on direct
+   subterms. Rocq 9.3's automatic generator asks for a list All scheme;
+   registering one would change these eliminators' types. Their original
+   proof terms are therefore given explicitly below, with the same names,
+   arguments and registrations. The nested induction lemmas are unchanged. *)
+Unset Elimination Schemes.
 Inductive Arities : Set :=
 | error_rec : Arities -> Arities -> Arities -> Arities
 | error_comp : Arities -> list Arities -> list Arities -> Arities
 | error_proj : nat -> nat -> nat -> Arities
 | ok_arities : nat -> nat -> Arities.
+Set Elimination Schemes.
+
+Definition Arities_rect :=
+fun (P : Arities -> Type)
+  (error_rec : forall a : Arities,
+               P a -> forall a0 : Arities, P a0 -> forall a1 : Arities, P a1 -> P (error_rec a a0 a1))
+  (error_comp : forall a : Arities, P a -> forall l l0 : list Arities, P (error_comp a l l0))
+  (error_proj : forall n n0 n1 : nat, P (error_proj n n0 n1)) (ok_arities : forall n n0 : nat, P (ok_arities n n0)) =>
+fix F (a : Arities) : P a :=
+  match a as a0 return P a0 with
+  | BC.error_rec a0 a1 a2 => error_rec a0 (F a0) a1 (F a1) a2 (F a2)
+  | BC.error_comp a0 l l0 => error_comp a0 (F a0) l l0
+  | BC.error_proj n n0 n1 => error_proj n n0 n1
+  | BC.ok_arities n n0 => ok_arities n n0
+  end.
+
+Arguments Arities_rect (P error_rec error_comp error_proj ok_arities)%_function_scope a.
+Register Scheme Arities_rect as rect_dep for Arities.
+
+Definition Arities_ind :=
+fun (P : Arities -> Prop)
+  (error_rec : forall a : Arities,
+               P a -> forall a0 : Arities, P a0 -> forall a1 : Arities, P a1 -> P (error_rec a a0 a1))
+  (error_comp : forall a : Arities, P a -> forall l l0 : list Arities, P (error_comp a l l0))
+  (error_proj : forall n n0 n1 : nat, P (error_proj n n0 n1)) (ok_arities : forall n n0 : nat, P (ok_arities n n0)) =>
+fix F (a : Arities) : P a :=
+  match a as a0 return P a0 with
+  | BC.error_rec a0 a1 a2 => error_rec a0 (F a0) a1 (F a1) a2 (F a2)
+  | BC.error_comp a0 l l0 => error_comp a0 (F a0) l l0
+  | BC.error_proj n n0 n1 => error_proj n n0 n1
+  | BC.ok_arities n n0 => ok_arities n n0
+  end.
+
+Arguments Arities_ind (P error_rec error_comp error_proj ok_arities)%_function_scope a.
+Register Scheme Arities_ind as ind_dep for Arities.
+
+Definition Arities_rec :=
+fun (P : Arities -> Set)
+  (error_rec : forall a : Arities,
+               P a -> forall a0 : Arities, P a0 -> forall a1 : Arities, P a1 -> P (error_rec a a0 a1))
+  (error_comp : forall a : Arities, P a -> forall l l0 : list Arities, P (error_comp a l l0))
+  (error_proj : forall n n0 n1 : nat, P (error_proj n n0 n1)) (ok_arities : forall n n0 : nat, P (ok_arities n n0)) =>
+fix F (a : Arities) : P a :=
+  match a as a0 return P a0 with
+  | BC.error_rec a0 a1 a2 => error_rec a0 (F a0) a1 (F a1) a2 (F a2)
+  | BC.error_comp a0 l l0 => error_comp a0 (F a0) l l0
+  | BC.error_proj n n0 n1 => error_proj n n0 n1
+  | BC.ok_arities n n0 => ok_arities n n0
+  end.
+
+Arguments Arities_rec (P error_rec error_comp error_proj ok_arities)%_function_scope a.
+Register Scheme Arities_rec as rec_dep for Arities.
+
+Definition Arities_sind :=
+fun (P : Arities -> SProp)
+  (error_rec : forall a : Arities,
+               P a -> forall a0 : Arities, P a0 -> forall a1 : Arities, P a1 -> P (error_rec a a0 a1))
+  (error_comp : forall a : Arities, P a -> forall l l0 : list Arities, P (error_comp a l l0))
+  (error_proj : forall n n0 n1 : nat, P (error_proj n n0 n1)) (ok_arities : forall n n0 : nat, P (ok_arities n n0)) =>
+fix F (a : Arities) : P a :=
+  match a as a0 return P a0 with
+  | BC.error_rec a0 a1 a2 => error_rec a0 (F a0) a1 (F a1) a2 (F a2)
+  | BC.error_comp a0 l l0 => error_comp a0 (F a0) l l0
+  | BC.error_proj n n0 n1 => error_proj n n0 n1
+  | BC.ok_arities n n0 => ok_arities n n0
+  end.
+
+Arguments Arities_sind (P error_rec error_comp error_proj ok_arities)%_function_scope a.
+Register Scheme Arities_sind as sind_dep for Arities.
 
 Definition aeq (x y:Arities) : bool :=
   match x, y with
@@ -854,7 +1012,7 @@ trivial.
 omega.
 transitivity (firstn n (vnl ++ repeat (n - length vnl) nil)).
 assert (n + 0 <= length (vnl ++ repeat (n - length vnl) nil)) as H0.
-rewrite app_length.
+rewrite length_app.
 rewrite length_repeat.
 omega.
 generalize (map_proj_seq_normal_gen n 0 (vnl ++ repeat (n - length vnl) nil) H0).
@@ -965,7 +1123,7 @@ omega.
 
 transitivity (firstn s (vsl ++ repeat (s - length vsl) nil)).
 assert (s + 0 <= length (vsl ++ repeat (s - length vsl) nil)) as H0.
-rewrite app_length.
+rewrite length_app.
 rewrite length_repeat.
 omega.
 generalize (map_proj_seq_safe_gen n s 0 vnl (vsl ++ repeat (s - length vsl) nil) H0).
@@ -987,7 +1145,7 @@ rewrite <- app_assoc.
 f_equal.
 transitivity (repeat (s - length vsl) nil (A:=list bool) ++  nil).
 f_equal.
-rewrite app_length, length_repeat.
+rewrite length_app, length_repeat.
 cutrewrite (s - (length vsl + (s - length vsl)) = 0).
 trivial.
 omega.
@@ -1137,18 +1295,18 @@ Proof.
    peval (poly_BC n e) (map (@length _) xl) + maxl (map (@length _) yl))) _ _ _ _ _ _ _); simpl; intros.
   omega.  
   destruct n.
-  eapply le_trans;[ apply nth_maxl_bound | ]; trivial.
+  eapply Nat.le_trans;[ apply nth_maxl_bound | ]; trivial.
   case_eq (leb i n); intros.
   apply leb_complete in H0.
   revert i H H0.
   induction xl; simpl; intros; simpl; destruct i; simpl; try omega.
   rewrite pproj_correct; simpl; omega.
-  eapply le_trans;[ apply IHxl | ]; trivial; omega.
-  eapply le_trans;[ apply nth_maxl_bound | ]; trivial.
+  eapply Nat.le_trans;[ apply IHxl | ]; trivial; omega.
+  eapply Nat.le_trans;[ apply nth_maxl_bound | ]; trivial.
   
   rewrite hd_nth_0; apply le_n_S; apply nth_maxl_bound; trivial.
   
-  eapply le_trans;[ | apply nth_maxl_bound].
+  eapply Nat.le_trans;[ | apply nth_maxl_bound].
   instantiate (1:=nil).
   rewrite hd_nth_0.
   instantiate (1:= 0).
@@ -1166,7 +1324,7 @@ Proof.
   apply Nat.max_lub_r with (n := length l0).
   rewrite H;  omega.
   rewrite Nat.succ_max_distr, <- H.
-  eapply le_trans;[ | apply Nat.le_max_r].
+  eapply Nat.le_trans;[ | apply Nat.le_max_r].
   apply Nat.le_max_r.
   omega.
   destruct l; simpl.
@@ -1179,25 +1337,25 @@ Proof.
   apply Nat.max_lub_l with (m := (maxl (map (@length _) yl))).
   rewrite <- Nat.max_assoc, <- Nat.max_assoc, H; omega.
   rewrite Nat.succ_max_distr, <- H.
-  eapply le_trans;[ | apply Nat.le_max_r].
-  eapply le_trans;[ | apply Nat.le_max_r].
-  eapply le_trans;[ | apply Nat.le_max_l]; auto.
+  eapply Nat.le_trans;[ | apply Nat.le_max_r].
+  eapply Nat.le_trans;[ | apply Nat.le_max_r].
+  eapply Nat.le_trans;[ | apply Nat.le_max_l]; auto.
   apply Nat.max_lub_r with (n := length l1).
   apply Nat.max_lub_r with (n := length l0).
   apply Nat.max_lub_l with (m := (maxl (map (@length _) yl))).
   rewrite <- Nat.max_assoc, <- Nat.max_assoc, H; omega.
   rewrite Nat.succ_max_distr, <- H.
-  eapply le_trans;[ | apply Nat.le_max_r].
-  eapply le_trans;[ | apply Nat.le_max_r].
-  eapply le_trans;[ | apply Nat.le_max_r].
+  eapply Nat.le_trans;[ | apply Nat.le_max_r].
+  eapply Nat.le_trans;[ | apply Nat.le_max_r].
+  eapply Nat.le_trans;[ | apply Nat.le_max_r].
   apply Nat.le_max_l.
 
   simpl; rewrite <- minus_n_O.
   destruct xl as [ | z xl]; simpl.
-  eapply le_trans;[ apply H2 |]; simpl.
+  eapply Nat.le_trans;[ apply H2 |]; simpl.
   rewrite pplus_correct, pmult_correct, pshift_correct; simpl; omega.
   induction z as [ | i z IHz ]; simpl.
-  eapply le_trans; [apply H2 |].
+  eapply Nat.le_trans; [apply H2 |].
   rewrite pplus_correct, pshift_correct; simpl; auto with arith.
   
   set (qh1 := peval (poly_BC (S n) h1) (length z :: map (@length _) xl)).
@@ -1214,15 +1372,15 @@ Proof.
   apply peval_monotonic; simpl; intros.
   case i0; trivial; omega.
   assert ( length z * (qh0 + qh1) <=  length z * (qh0S + qh1S)).
-  apply mult_le_compat_l.
+  apply Nat.mul_le_mono_l.
   omega.
 
   case i.
-  eapply le_trans.
+  eapply Nat.le_trans.
   eapply H4; eauto.
   simpl.
-  eapply le_trans.
-  apply plus_le_compat_l.
+  eapply Nat.le_trans.
+  apply Nat.add_le_mono_l.
   apply Nat.max_le_compat_r.
   apply IHz.
   rewrite max_l; auto with arith.
@@ -1230,11 +1388,11 @@ Proof.
     pshift_correct, pshift_correct, pproj_correct, pproj_correct; simpl;
       unfold qh0, qh1, qh0S, qh1S in *; omega.
 
-  eapply le_trans.
+  eapply Nat.le_trans.
   eapply H3; eauto.
   simpl.
-  eapply le_trans.
-  apply plus_le_compat_l.
+  eapply Nat.le_trans.
+  apply Nat.add_le_mono_l.
   apply Nat.max_le_compat_r.
   apply IHz.
   rewrite max_l; auto with arith.
@@ -1243,39 +1401,39 @@ Proof.
       unfold qh0, qh1, qh0S, qh1S in *; omega.
 
   rewrite pplus_correct, pcst_correct, pplus_correct, pcomp_correct, map_map; simpl.
-  eapply le_trans.
+  eapply Nat.le_trans.
   apply H2.
-  rewrite <- plus_assoc.
-  apply plus_le_compat.
+  rewrite <- Nat.add_assoc.
+  apply Nat.add_le_mono.
   rewrite map_map.
   apply peval_monotonic.
   intros.
   destruct (lt_dec i (length rl)).
   erewrite map_nth2.
-  eapply le_trans.
+  eapply Nat.le_trans.
   eapply H3.
   apply nth_In; trivial.
   simpl.
-  rewrite plus_0_r.
+  rewrite Nat.add_0_r.
   erewrite (@map_nth2 _ _ _ _ 0 _ i).
-  apply le_refl.
+  apply Nat.le_refl.
   instantiate (1 := zero).
   simpl; trivial.
   simpl; trivial.
   rewrite nth_overflow, nth_overflow; trivial.
-  rewrite map_length; omega.
-  rewrite map_length; omega.
+  rewrite length_map; omega.
+  rewrite length_map; omega.
   edestruct maxl_nth.
   destruct (lt_dec x (length tl)).
   rewrite H5. 
   erewrite map_nth2.
-  eapply le_trans.
+  eapply Nat.le_trans.
   erewrite map_nth2.
   eapply H4.
   apply nth_In; trivial.
   instantiate (2 := zero).
   simpl; trivial.
-  apply plus_le_compat_r.
+  apply Nat.add_le_mono_r.
   erewrite <- (@map_nth2 _ _ (poly_BC n)).
   apply peval_nth_pplus.
   simpl; trivial.
@@ -1283,7 +1441,7 @@ Proof.
   rewrite nth_overflow in H5.
   rewrite H5.
   omega.
-  rewrite map_length, map_length.
+  rewrite length_map, length_map.
   omega.
 Qed.
 
@@ -1304,11 +1462,11 @@ Proof.
  destruct n; simpl in *.
  rewrite <- minus_n_O; trivial.
  destruct a; simpl in *.
- elimtype False; omega.
+ exfalso; omega.
  rewrite <- minus_n_O; trivial.
  rewrite leb_correct_conv; [ | omega ].
  case_eq (a - S n); intros.
- elimtype False; omega.
+ exfalso; omega.
  rewrite leb_correct_conv; [ | omega ].
  f_equal.
  omega.
@@ -1511,7 +1669,7 @@ Proof.
   rewrite <- Hp1.
   rewrite H3; trivial.
   apply Nat.le_max_l.
-  apply le_trans with n.
+  apply Nat.le_trans with n.
   apply maxl_map; intros.  
   apply H4; auto.
   apply Nat.le_max_l.
@@ -1540,36 +1698,36 @@ destruct vnl as [ | x vnl]; simpl in *;[ discriminate | ].
 induction x; simpl.
 rewrite <- plus_n_O; auto.
 destruct a; simpl.
-eapply le_trans.
-apply plus_le_compat.
+eapply Nat.le_trans.
+apply Nat.add_le_mono.
 apply IHx.
 apply H4; simpl; omega.
-rewrite <- !plus_assoc; simpl.
-apply plus_le_compat; trivial.
+rewrite <- !Nat.add_assoc; simpl.
+apply Nat.add_le_mono; trivial.
 match goal with 
-  [ |- ?a + ?b <= ?c + (?d + ?e) ] => apply le_trans with (e + d);[ | omega ]
+  [ |- ?a + ?b <= ?c + (?d + ?e) ] => apply Nat.le_trans with (e + d);[ | omega ]
 end.
-apply plus_le_compat; trivial.
-apply mult_le_compat; trivial.
-apply plus_le_compat; trivial.
+apply Nat.add_le_mono; trivial.
+apply Nat.mul_le_mono; trivial.
+apply Nat.add_le_mono; trivial.
 apply peval_monotonic; intros; simpl.
 destruct i; simpl; try omega.
 apply peval_monotonic; intros; simpl.
 destruct i; simpl; try omega.
 apply peval_monotonic; intros; simpl.
 destruct i; simpl; try omega.
-eapply le_trans.
-apply plus_le_compat.
+eapply Nat.le_trans.
+apply Nat.add_le_mono.
 apply IHx.
 apply H3; simpl; omega.
-rewrite <- !plus_assoc; simpl.
-apply plus_le_compat; trivial.
+rewrite <- !Nat.add_assoc; simpl.
+apply Nat.add_le_mono; trivial.
 match goal with 
-  [ |- ?a + ?b <= ?c + (?d + ?e) ] => apply le_trans with (e + c);[ | omega]
+  [ |- ?a + ?b <= ?c + (?d + ?e) ] => apply Nat.le_trans with (e + c);[ | omega]
 end.
-apply plus_le_compat; trivial.
-apply mult_le_compat; trivial.
-apply plus_le_compat; trivial.
+apply Nat.add_le_mono; trivial.
+apply Nat.mul_le_mono; trivial.
+apply Nat.add_le_mono; trivial.
 apply peval_monotonic; intros; simpl.
 destruct i; simpl; try omega.
 apply peval_monotonic; intros; simpl.
@@ -1578,19 +1736,19 @@ apply peval_monotonic; intros; simpl.
 destruct i; simpl; try omega.
 
 rewrite !pplus_correct, pcst_correct, pcomp_correct, !pplusl_correct; simpl.
-rewrite !plus_assoc.
-apply plus_le_compat.
-apply plus_le_compat.
-eapply le_trans.
+rewrite !Nat.add_assoc.
+apply Nat.add_le_mono.
+apply Nat.add_le_mono.
+eapply Nat.le_trans.
 apply H2.
-rewrite !map_length; trivial.
-rewrite !map_length; trivial.
+rewrite !length_map; trivial.
+rewrite !length_map; trivial.
 rewrite !map_map; simpl.
 apply peval_monotonic.
 intros.
 destruct (lt_dec i (length rl)).
 erewrite map_nth2.
-eapply le_trans.
+eapply Nat.le_trans.
 erewrite sem_cost_correct.
 eapply polymax_bounding.
 apply H0; apply nth_In; trivial.
@@ -1602,7 +1760,7 @@ instantiate (1 := zero).
 omega.
 simpl; rewrite pcst_correct; trivial.
 simpl; trivial.
-rewrite !nth_overflow; trivial; rewrite map_length; omega.
+rewrite !nth_overflow; trivial; rewrite length_map; omega.
 rewrite !map_map.
 apply plusl_compat.
 intros.
