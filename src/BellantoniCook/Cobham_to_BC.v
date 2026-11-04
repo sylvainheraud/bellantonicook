@@ -1,4 +1,4 @@
-Require Import Bool Arith List.
+From Stdlib Require Import Bool Arith List.
 Require Import BellantoniCook.Lib BellantoniCook.Bitstring BellantoniCook.MultiPoly BellantoniCook.Cobham BellantoniCook.CobhamLib BellantoniCook.CobhamUnary BellantoniCook.BC BellantoniCook.BCLib BellantoniCook.BCUnary.
 
 (*
@@ -16,7 +16,7 @@ destruct n0 as [ | n0]; simpl.
 
 intros s s0 H.
 rewrite H; simpl.
-rewrite map_length, seq_length, <- beq_nat_refl; simpl.
+rewrite length_map, length_seq, <- beq_nat_refl; simpl.
 case_eq (forallb
       (fun se : BC => aeq (arities se) (ok_arities (n + 0) (s + s0)))
       (map (proj (n + 0) (s + s0)) (seq (n + 0 + s) s0))); intro H0; trivial.
@@ -36,7 +36,7 @@ simpl; congruence.
 rewrite leb_iff_conv in H6; omega.
 
 intros s [ | s0] H; simpl; rewrite H; simpl.
-rewrite map_length, seq_length, <- beq_nat_refl.
+rewrite length_map, length_seq, <- beq_nat_refl.
 simpl.
 case_eq (n + S n0 + 0).
 intro H0.
@@ -73,7 +73,7 @@ omega.
 rewrite leb_iff_conv in H1.
 contradict H1.
 omega.
-do 2 rewrite map_length, seq_length, <- beq_nat_refl.
+do 2 rewrite length_map, length_seq, <- beq_nat_refl.
 simpl.
 case_eq (n + S n0 + 0).
 intro H0.
@@ -229,9 +229,9 @@ rewrite leb_iff_conv in H1.
 rewrite app_nth2.
 congruence.
 omega.
-rewrite app_length.
+rewrite length_app.
 omega.
-rewrite plus_comm, skipn_plus, <- Hnl, skipn_app.
+rewrite Nat.add_comm, skipn_plus, <- Hnl, skipn_app.
 trivial.
 Qed.
 
@@ -372,7 +372,7 @@ Transparent P_e Y_e.
  Proof.
    simpl.
    rewrite h1_inf; simpl.
-   rewrite map_length, seq_length.
+   rewrite length_map, length_seq.
    destruct sl.
    elim sl_not_zero; trivial.
    simpl.
@@ -380,7 +380,7 @@ Transparent P_e Y_e.
    repeat (rewrite <- beq_nat_refl; simpl).
    case_eq ( forallb (fun se : BC => aeq (arities se) (ok_arities 2 (S (S n))))
           (map (proj 2 (S (S n))) (seq 4 n))); intros; simpl; trivial.
-   elimtype False.
+   exfalso.
    apply eq_true_false_abs in H; trivial.
    eapply forallb_forall; intros.
     apply in_map_iff in H0.
@@ -404,7 +404,7 @@ Transparent P_e Y_e.
  Proof.
    simpl.
    rewrite h0_inf; simpl.
-   rewrite map_length, seq_length.
+   rewrite length_map, length_seq.
    destruct sl.
    elim sl_not_zero; trivial.
    simpl.
@@ -412,7 +412,7 @@ Transparent P_e Y_e.
    repeat (rewrite <- beq_nat_refl; simpl).
    case_eq ( forallb (fun se : BC => aeq (arities se) (ok_arities 2 (S (S n))))
           (map (proj 2 (S (S n))) (seq 4 n))); intros; simpl; trivial.
-   elimtype False.
+   exfalso.
    apply eq_true_false_abs in H; trivial.
    eapply forallb_forall; intros.
     apply in_map_iff in H0.
@@ -470,12 +470,12 @@ Transparent P_e Y_e.
   Proof.
     simpl.
     rewrite f'_inf.
-    rewrite map_length, seq_length.
+    rewrite length_map, length_seq.
     repeat (rewrite <- beq_nat_refl; simpl).
     case_eq (forallb (fun se : BC => aeq (arities se) (ok_arities 1 sl))
          (map (proj 1 sl) (seq 1 sl))); intros.
     trivial.
-    elimtype False.
+    exfalso.
     apply eq_true_false_abs in H; trivial.
     eapply forallb_forall; intros.
     apply in_map_iff in H0.
@@ -533,7 +533,7 @@ Proof.
  simpl in H.
 
  assert (S (length y) < length w).
- eapply le_trans; [ | apply H].
+ eapply Nat.le_trans; [ | apply H].
  simpl; omega.
 
  assert (1 < length w - length y) by omega.
@@ -571,11 +571,11 @@ Proof.
  apply map_ext2; intros.
  apply in_seq_iff in H.
  rewrite leb_correct_conv;[ simpl | omega].
- do 4 (destruct a0; simpl;[ elimtype False; omega | ]); trivial.
+ do 4 (destruct a0; simpl;[ exfalso; omega | ]); trivial.
  rewrite <- H1; simpl; trivial.
- eapply le_trans; [ | apply H ].
+ eapply Nat.le_trans; [ | apply H ].
  rewrite pcomp_correct, pplus_correct.
- apply le_trans with (peval (rec_simulation (S sl) h1')
+ apply Nat.le_trans with (peval (rec_simulation (S sl) h1')
      (map (fun p : pol => peval p (length y :: map (@length _) xl))
         (pproj (S (length xl)) 0
          :: poly_Cobham cj
@@ -583,20 +583,20 @@ Proof.
  apply peval_monotonic; simpl; intros.
  destruct i.
  rewrite pproj_correct; simpl.
- eapply le_trans.
+ eapply Nat.le_trans.
  apply Y_le; omega.
  rewrite Y_refl; trivial.
  destruct i.
  rewrite <- map_cons.
- apply le_trans with (peval (poly_Cobham (Rec g' h0' h1' cj)) (map (@length _) ((Y z w y) :: xl))).
- eapply le_trans.
+ apply Nat.le_trans with (peval (poly_Cobham (Rec g' h0' h1' cj)) (map (@length _) ((Y z w y) :: xl))).
+ eapply Nat.le_trans.
  2: apply poly_Cobham_correct.
  simpl; trivial.
  simpl in *; trivial.
 
  apply peval_monotonic; intros; simpl.
  destruct i; trivial.
- eapply le_trans.
+ eapply Nat.le_trans.
  apply Y_le; omega.
  rewrite Y_refl; trivial.
  rewrite map_map.
@@ -612,7 +612,7 @@ Proof.
  apply in_seq_iff in H.
  repeat rewrite pproj_correct; simpl.
  destruct a0; simpl.
- elimtype False; omega.
+ exfalso; omega.
  rewrite IHxl at 1; trivial.
  rewrite H6; trivial.
 
@@ -627,11 +627,11 @@ Proof.
  apply map_ext2; intros.
  apply in_seq_iff in H.
  rewrite leb_correct_conv;[ simpl | omega].
- do 4 (destruct a0; simpl;[ elimtype False; omega | ]); trivial.
+ do 4 (destruct a0; simpl;[ exfalso; omega | ]); trivial.
  rewrite <- H1; simpl; trivial.
- eapply le_trans; [ | apply H ].
+ eapply Nat.le_trans; [ | apply H ].
  rewrite pcomp_correct, pplus_correct.
- apply le_trans with (peval (rec_simulation (S sl) h0')
+ apply Nat.le_trans with (peval (rec_simulation (S sl) h0')
      (map (fun p : pol => peval p (length y :: map (@length _) xl))
         (pproj (S (length xl)) 0
          :: poly_Cobham cj
@@ -639,20 +639,20 @@ Proof.
  apply peval_monotonic; simpl; intros.
  destruct i.
  rewrite pproj_correct; simpl.
- eapply le_trans.
+ eapply Nat.le_trans.
  apply Y_le; omega.
  rewrite Y_refl; trivial.
  destruct i.
  rewrite <- map_cons.
- apply le_trans with (peval (poly_Cobham (Rec g' h0' h1' cj)) (map (@length _) ((Y z w y) :: xl))).
- eapply le_trans.
+ apply Nat.le_trans with (peval (poly_Cobham (Rec g' h0' h1' cj)) (map (@length _) ((Y z w y) :: xl))).
+ eapply Nat.le_trans.
  2: apply poly_Cobham_correct.
  simpl; trivial.
  simpl in *; trivial.
 
  apply peval_monotonic; intros; simpl.
  destruct i; trivial.
- eapply le_trans.
+ eapply Nat.le_trans.
  apply Y_le; omega.
  rewrite Y_refl; trivial.
  rewrite map_map.
@@ -668,7 +668,7 @@ Proof.
  apply in_seq_iff in H.
  repeat rewrite pproj_correct; simpl.
  destruct a0; simpl.
- elimtype False; omega.
+ exfalso; omega.
  rewrite IHxl at 1; trivial.
  rewrite H6; trivial.
 
@@ -680,7 +680,7 @@ Proof.
  rewrite skipn_length.
  case_eq (skipn (length w - length (true :: z)) y); intros.
  apply skipn_nil_length in H3.
- apply lt_not_le in l.
+ apply Nat.lt_nge in l.
  simpl in *; omega.
  case b; intro; discriminate.
 
@@ -706,7 +706,7 @@ Proof.
  rewrite BC_dummies_correct; simpl; auto.
  eapply g_correct; simpl ; trivial.
  rewrite <- H1; omega.
- eapply le_trans; [ | apply H].
+ eapply Nat.le_trans; [ | apply H].
  rewrite pshift_correct; simpl; omega.
  rewrite <- H1; omega.  
 Qed.
@@ -732,7 +732,7 @@ Proof.
   rewrite leb_correct_conv;[ | omega].
   simpl.
   destruct a0; simpl.
-  elimtype False; omega.
+  exfalso; omega.
   f_equal; omega.
 Qed.
 
@@ -785,11 +785,11 @@ Opaque f_smash'.
     simpl; rewrite <- minus_n_O; trivial.
 
     rewrite H1.
-    rewrite map_length.
+    rewrite length_map.
     repeat (rewrite <- beq_nat_refl; simpl).
     case_eq (forallb (fun se : BC => aeq (arities se) 
       (ok_arities 1 n)) (map (Cobham_to_BC' n) rl)); intros; trivial.
-    elimtype False.
+    exfalso.
     apply eq_true_false_abs in H3; trivial.
     eapply forallb_forall; intros.
     apply in_map_iff in H4.
@@ -1043,7 +1043,7 @@ Proof.
  simpl.
  repeat rewrite pproj_correct.
  simpl.
- eapply le_trans with (2 := H1).
+ eapply Nat.le_trans with (2 := H1).
  repeat rewrite pplus_correct.
  repeat rewrite pcomp_correct.
  repeat rewrite pplus_correct.
@@ -1079,7 +1079,7 @@ Proof.
  intros.
  rewrite App_correct.
  simpl.
- rewrite app_length.
+ rewrite length_app.
  rewrite length_smash'.
  rewrite hd_nth_0; trivial.
  rewrite length_smash.
@@ -1090,13 +1090,13 @@ Proof.
  destruct l0; simpl.
  omega.
  rewrite plus_n_Sm.
- rewrite plus_comm.
- apply plus_le_compat_l.
- apply le_trans with ( S (S (length l * 1))).
+ rewrite Nat.add_comm.
+ apply Nat.add_le_mono_l.
+ apply Nat.le_trans with ( S (S (length l * 1))).
  omega.
  apply le_n_S.
  apply le_n_S.
- apply mult_le_compat_l.
+ apply Nat.mul_le_mono_l.
  omega.
  
  simpl.
@@ -1113,12 +1113,12 @@ Proof.
  rewrite nth_S_tl.
  rewrite App_correct.
  simpl.
- rewrite app_length.
+ rewrite length_app.
  rewrite length_smash'.
  rewrite length_smash.
  simpl.
- eapply le_trans.
- apply plus_le_compat_r.
+ eapply Nat.le_trans.
+ apply Nat.add_le_mono_r.
  apply IHl0.
  rewrite length_smash'.
  rewrite length_smash'.
@@ -1131,12 +1131,12 @@ Proof.
  rewrite nth_S_tl.
  rewrite App_correct.
  simpl.
- rewrite app_length.
+ rewrite length_app.
  rewrite length_smash'.
  rewrite length_smash.
  simpl.
- eapply le_trans.
- apply plus_le_compat_r.
+ eapply Nat.le_trans.
+ apply Nat.add_le_mono_r.
  apply IHl0.
  rewrite length_smash'.
  rewrite length_smash'.
@@ -1160,7 +1160,7 @@ Proof.
  intros.
  simpl.
  rewrite App_correct.
- rewrite app_length.
+ rewrite length_app.
  induction (hd nil l); simpl.
  rewrite hd_nth_0; trivial.
  case a; simpl; omega.
@@ -1181,7 +1181,7 @@ Proof.
  intros.
  simpl.
  rewrite App_correct.
- rewrite app_length.
+ rewrite length_app.
  rewrite hd_nth_1.
  induction (hd nil l); simpl.
  rewrite nth_S_tl.
@@ -1198,16 +1198,16 @@ Proof.
  case a.
  rewrite nth_S_tl.
  rewrite plus_n_Sm.
- eapply le_trans.
- 2: apply plus_le_compat_l.
+ eapply Nat.le_trans.
+ 2: apply Nat.add_le_mono_l.
  2: apply IHl0.
  clear IHl0.
  induction (nth 1 l nil); simpl; trivial.
  case a0; simpl; omega.
  rewrite nth_S_tl.
  rewrite plus_n_Sm.
- eapply le_trans.
- 2: apply plus_le_compat_l.
+ eapply Nat.le_trans.
+ 2: apply Nat.add_le_mono_l.
  2: apply IHl0.
  clear IHl0.
  induction (nth 1 l nil); simpl; trivial.
@@ -1225,7 +1225,7 @@ Proof.
      repeat rewrite pproj_correct in H9.
 
  assert (S (length y) < length w).
- eapply le_trans; [ | eauto].
+ eapply Nat.le_trans; [ | eauto].
  simpl; omega.
 
  assert (1 < length w - length y) by omega.
@@ -1265,15 +1265,15 @@ Proof.
 
  simpl in *.
 
- eapply le_trans.
+ eapply Nat.le_trans.
  2: apply H9.
 
  repeat rewrite pcomp_correct.
  repeat rewrite pplus_correct.
 
  injection H8; clear H8; intros; subst.
- apply plus_le_compat.
- apply plus_le_compat.
+ apply Nat.add_le_mono.
+ apply Nat.add_le_mono.
 
  apply peval_monotonic.
  intros; simpl.
@@ -1378,7 +1378,7 @@ Proof.
  rewrite H8; auto.
  rewrite pshift_correct.
  rewrite pshift_correct.
- apply plus_le_compat_r.
+ apply Nat.add_le_mono_r.
  rewrite <- minus_n_O.
  apply peval_monotonic.
  intros; simpl.
@@ -1397,8 +1397,8 @@ Proof.
  rewrite <- H8.
  trivial.
  rewrite map_map.
- rewrite map_length.
- rewrite seq_length.
+ rewrite length_map.
+ rewrite length_seq.
  trivial.
 
  destruct H3.
@@ -1409,11 +1409,11 @@ Proof.
  intros.
  eapply H2; trivial.
  rewrite <- forall_andl in H6; auto.
- eapply le_trans with (2 := H5); simpl.
+ eapply Nat.le_trans with (2 := H5); simpl.
  repeat rewrite pplus_correct.
  repeat rewrite pcomp_correct.
  subst.
- eapply le_trans with (peval 
+ eapply Nat.le_trans with (peval
    (pplusl (map (rec_simulation (length xl)) rl)) (map (@length _) xl));[ | omega].
  rewrite pplusl_correct. 
  rewrite map_map.
@@ -1424,11 +1424,11 @@ Proof.
  destruct H7.
  subst.
  omega.
- eapply le_trans.
+ eapply Nat.le_trans.
  apply IHrl; trivial.
  omega.
- rewrite map_length; trivial.
- eapply le_trans with (2 := H5); simpl.
+ rewrite length_map; trivial.
+ eapply Nat.le_trans with (2 := H5); simpl.
  do 2 rewrite pplus_correct.
  rewrite pcomp_correct.
  rewrite pcst_correct.
@@ -1539,8 +1539,8 @@ trivial.
 simpl in H.
 rewrite nat2BC_correct, poly_BC_pow_correct.
 rewrite nat2BC_correct in IH.
-rewrite (mult_comm (peval_pow _ _)).
-rewrite mult_assoc.
+rewrite (Nat.mul_comm (peval_pow _ _)).
+rewrite Nat.mul_assoc.
 rewrite IH.
 ring.
 tauto.
@@ -1602,8 +1602,8 @@ Lemma Cobham_to_BC''_inf : forall e n,
 Proof.
  intros; simpl.
  erewrite Cobham_to_BC'_inf; simpl; trivial.
- rewrite map_length.
- rewrite seq_length.
+ rewrite length_map.
+ rewrite length_seq.
  rewrite <- beq_nat_refl; simpl.
  erewrite poly_BC_arities.
  rewrite rec_simulation_arity; trivial.
@@ -1612,7 +1612,7 @@ Proof.
  case_eq ( forallb (fun se : BC => aeq (arities se) (ok_arities n n))
          (map (proj n n) (seq n n)) ); intros.
  trivial.
- elimtype False; apply eq_true_false_abs with (2 := H0).
+ exfalso; apply eq_true_false_abs with (2 := H0).
  rewrite forallb_forall; intros.
  apply in_map_iff in H1.
  destruct H1 as (? & ? & ?).
@@ -1620,7 +1620,7 @@ Proof.
  simpl; trivial.
  apply in_seq_iff in H2.
  case_eq (n + n); intros.
- elimtype False; omega.
+ exfalso; omega.
  rewrite leb_correct; simpl.
  rewrite <- beq_nat_refl; simpl; trivial.
  omega.
@@ -1683,12 +1683,12 @@ Lemma Cobham_to_BC_inf : forall e n,
 Proof.
  intros; simpl.
  erewrite Cobham_to_BC''_inf; simpl; trivial.
- rewrite map_length.
- rewrite seq_length.
+ rewrite length_map.
+ rewrite length_seq.
  rewrite <- beq_nat_refl; simpl.
  case_eq (  forallb (fun ne : BC => aeq (arities ne) (ok_arities n 0))
          (map (proj n 0) (seq 0 n)) ); intros; simpl; trivial.
- elimtype False; apply eq_true_false_abs with (2 := H0).
+ exfalso; apply eq_true_false_abs with (2 := H0).
  rewrite forallb_forall; intros.
  apply in_map_iff in H1.
  destruct H1 as (? & ? & ?).
@@ -1696,7 +1696,7 @@ Proof.
  simpl; trivial.
  apply in_seq_iff in H2.
  case_eq (n + 0); intros.
- elimtype False; omega.
+ exfalso; omega.
  rewrite leb_correct; simpl.
  rewrite <- beq_nat_refl; simpl; trivial.
  omega.

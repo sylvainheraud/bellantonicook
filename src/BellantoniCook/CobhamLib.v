@@ -1,4 +1,4 @@
-Require Import Arith List.
+From Stdlib Require Import Arith List.
 Require Import BellantoniCook.Lib BellantoniCook.Cobham.
 
 Definition Zero_e (n:nat) : Cobham :=
@@ -48,7 +48,7 @@ simpl.
 intuition.
 destruct l as [ | u [ | v l] ]; simpl.
 omega.
-rewrite length_smash, mult_1_r; simpl.
+rewrite length_smash, Nat.mul_1_r; simpl.
 induction u as [ | [ | ] u IH]; simpl; omega.
 rewrite length_smash', length_smash; simpl.
 induction u as [ | [ | ] u IH]; simpl; omega.
@@ -94,12 +94,12 @@ trivial.
 simpl.
 rewrite App_correct.
 simpl.
-rewrite app_length.
+rewrite length_app.
 simpl; omega.
 simpl.
 rewrite App_correct.
 simpl.
-rewrite app_length.
+rewrite length_app.
 simpl; omega.
 Qed. 
 
@@ -184,30 +184,30 @@ Proof.
   destruct (hd nil l); simpl; repeat rewrite nth_S_tl.
 
   rewrite plus_n_Sm.
-  rewrite plus_comm.
+  rewrite Nat.add_comm.
   apply le_plus_trans.
-  apply le_trans with ( S (S (length (nth 1 l nil)) * 1)).
+  apply Nat.le_trans with ( S (S (length (nth 1 l nil)) * 1)).
   omega.
   apply le_n_S.
   apply le_n_S.
-  apply mult_le_compat.
+  apply Nat.mul_le_mono.
   trivial.
   apply le_n_S.
   auto with arith.
 
-  apply le_trans with ( S (length (if b then nth 2 l nil else nth 3 l nil)) * 1).
-  rewrite mult_1_r; auto with arith.
+  apply Nat.le_trans with ( S (length (if b then nth 2 l nil else nth 3 l nil)) * 1).
+  rewrite Nat.mul_1_r; auto with arith.
 
-  apply le_trans with (S (S (length (nth 2 l nil)) * S (length (nth 3 l nil)))).
+  apply Nat.le_trans with (S (S (length (nth 2 l nil)) * S (length (nth 3 l nil)))).
   case b.
-  rewrite mult_1_r.
+  rewrite Nat.mul_1_r.
   apply le_n_S.
-  rewrite <- mult_1_r at 1.
-  apply mult_le_compat; auto with arith.
-  rewrite mult_1_r.
+  rewrite <- Nat.mul_1_r at 1.
+  apply Nat.mul_le_mono; auto with arith.
+  rewrite Nat.mul_1_r.
   apply le_n_S.
-  rewrite <- mult_1_l at 1.
-  apply mult_le_compat; auto with arith.
+  rewrite <- Nat.mul_1_l at 1.
+  apply Nat.mul_le_mono; auto with arith.
   set (R1 := length (nth 1 l nil)).
   set (R2 := length (nth 2 l nil)).
   set (R3 := length (nth 3 l nil)).

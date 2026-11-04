@@ -1,6 +1,6 @@
 (** The language of Cobham *)
 
-Require Import Bool Arith List.
+From Stdlib Require Import Bool Arith List.
 Require Import BellantoniCook.Lib BellantoniCook.Bitstring BellantoniCook.MultiPoly.
 
 (** * Syntax and induction principle
@@ -9,6 +9,12 @@ Require Import BellantoniCook.Lib BellantoniCook.Bitstring BellantoniCook.MultiP
     ignores the type [list BC] in the constructor [Comp].
 *)
 
+(* Preserve the historical eliminators, which recurse only on direct
+   subterms. Rocq 9.3's automatic generator asks for a list All scheme;
+   registering one would change these eliminators' types. Their original
+   proof terms are therefore given explicitly below, with the same names,
+   arguments and registrations. The nested induction lemmas are unchanged. *)
+Unset Elimination Schemes.
 Inductive Cobham : Type :=
 | Zero : Cobham
 | Proj : nat -> nat -> Cobham
@@ -16,6 +22,83 @@ Inductive Cobham : Type :=
 | Smash : Cobham
 | Rec  : Cobham -> Cobham -> Cobham -> Cobham -> Cobham
 | Comp : nat -> Cobham -> list Cobham -> Cobham.
+Set Elimination Schemes.
+
+Definition Cobham_rect :=
+fun (P : Cobham -> Type) (Zero : P Zero) (Proj : forall n n0 : nat, P (Proj n n0)) (Succ : forall b : bool, P (Succ b))
+  (Smash : P Smash)
+  (Rec : forall c : Cobham,
+         P c -> forall c0 : Cobham, P c0 -> forall c1 : Cobham, P c1 -> forall c2 : Cobham, P c2 -> P (Rec c c0 c1 c2))
+  (Comp : forall (n : nat) (c : Cobham), P c -> forall l : list Cobham, P (Comp n c l)) =>
+fix F (c : Cobham) : P c :=
+  match c as c0 return P c0 with
+  | Cobham.Zero => Zero
+  | Cobham.Proj n n0 => Proj n n0
+  | Cobham.Succ b => Succ b
+  | Cobham.Smash => Smash
+  | Cobham.Rec c0 c1 c2 c3 => Rec c0 (F c0) c1 (F c1) c2 (F c2) c3 (F c3)
+  | Cobham.Comp n c0 l => Comp n c0 (F c0) l
+  end.
+
+Arguments Cobham_rect P%_function_scope Zero (Proj Succ)%_function_scope Smash (Rec Comp)%_function_scope c.
+Register Scheme Cobham_rect as rect_dep for Cobham.
+
+Definition Cobham_ind :=
+fun (P : Cobham -> Prop) (Zero : P Zero) (Proj : forall n n0 : nat, P (Proj n n0)) (Succ : forall b : bool, P (Succ b))
+  (Smash : P Smash)
+  (Rec : forall c : Cobham,
+         P c -> forall c0 : Cobham, P c0 -> forall c1 : Cobham, P c1 -> forall c2 : Cobham, P c2 -> P (Rec c c0 c1 c2))
+  (Comp : forall (n : nat) (c : Cobham), P c -> forall l : list Cobham, P (Comp n c l)) =>
+fix F (c : Cobham) : P c :=
+  match c as c0 return P c0 with
+  | Cobham.Zero => Zero
+  | Cobham.Proj n n0 => Proj n n0
+  | Cobham.Succ b => Succ b
+  | Cobham.Smash => Smash
+  | Cobham.Rec c0 c1 c2 c3 => Rec c0 (F c0) c1 (F c1) c2 (F c2) c3 (F c3)
+  | Cobham.Comp n c0 l => Comp n c0 (F c0) l
+  end.
+
+Arguments Cobham_ind P%_function_scope Zero (Proj Succ)%_function_scope Smash (Rec Comp)%_function_scope c.
+Register Scheme Cobham_ind as ind_dep for Cobham.
+
+Definition Cobham_rec :=
+fun (P : Cobham -> Set) (Zero : P Zero) (Proj : forall n n0 : nat, P (Proj n n0)) (Succ : forall b : bool, P (Succ b))
+  (Smash : P Smash)
+  (Rec : forall c : Cobham,
+         P c -> forall c0 : Cobham, P c0 -> forall c1 : Cobham, P c1 -> forall c2 : Cobham, P c2 -> P (Rec c c0 c1 c2))
+  (Comp : forall (n : nat) (c : Cobham), P c -> forall l : list Cobham, P (Comp n c l)) =>
+fix F (c : Cobham) : P c :=
+  match c as c0 return P c0 with
+  | Cobham.Zero => Zero
+  | Cobham.Proj n n0 => Proj n n0
+  | Cobham.Succ b => Succ b
+  | Cobham.Smash => Smash
+  | Cobham.Rec c0 c1 c2 c3 => Rec c0 (F c0) c1 (F c1) c2 (F c2) c3 (F c3)
+  | Cobham.Comp n c0 l => Comp n c0 (F c0) l
+  end.
+
+Arguments Cobham_rec P%_function_scope Zero (Proj Succ)%_function_scope Smash (Rec Comp)%_function_scope c.
+Register Scheme Cobham_rec as rec_dep for Cobham.
+
+Definition Cobham_sind :=
+fun (P : Cobham -> SProp) (Zero : P Zero) (Proj : forall n n0 : nat, P (Proj n n0))
+  (Succ : forall b : bool, P (Succ b)) (Smash : P Smash)
+  (Rec : forall c : Cobham,
+         P c -> forall c0 : Cobham, P c0 -> forall c1 : Cobham, P c1 -> forall c2 : Cobham, P c2 -> P (Rec c c0 c1 c2))
+  (Comp : forall (n : nat) (c : Cobham), P c -> forall l : list Cobham, P (Comp n c l)) =>
+fix F (c : Cobham) : P c :=
+  match c as c0 return P c0 with
+  | Cobham.Zero => Zero
+  | Cobham.Proj n n0 => Proj n n0
+  | Cobham.Succ b => Succ b
+  | Cobham.Smash => Smash
+  | Cobham.Rec c0 c1 c2 c3 => Rec c0 (F c0) c1 (F c1) c2 (F c2) c3 (F c3)
+  | Cobham.Comp n c0 l => Comp n c0 (F c0) l
+  end.
+
+Arguments Cobham_sind P%_function_scope Zero (Proj Succ)%_function_scope Smash (Rec Comp)%_function_scope c.
+Register Scheme Cobham_sind as sind_dep for Cobham.
 
 Definition Rec2 g h j := Rec g h h j.
 
@@ -72,11 +155,94 @@ Qed.
     of the expression [e] if it is well formed, or an error including the arity of the subterms.
 *)
 
+(* Preserve the historical eliminators, which recurse only on direct
+   subterms. Rocq 9.3's automatic generator asks for a list All scheme;
+   registering one would change these eliminators' types. Their original
+   proof terms are therefore given explicitly below, with the same names,
+   arguments and registrations. The nested induction lemmas are unchanged. *)
+Unset Elimination Schemes.
 Inductive Arity : Set :=
 | error_Rec : Arity -> Arity -> Arity -> Arity -> Arity
 | error_Comp : Arity -> list Arity -> Arity
 | error_Proj : nat -> nat -> Arity
 | ok_arity : nat -> Arity.
+Set Elimination Schemes.
+
+Definition Arity_rect :=
+fun (P : Arity -> Type)
+  (error_Rec : forall a : Arity,
+               P a ->
+               forall a0 : Arity,
+               P a0 -> forall a1 : Arity, P a1 -> forall a2 : Arity, P a2 -> P (error_Rec a a0 a1 a2))
+  (error_Comp : forall a : Arity, P a -> forall l : list Arity, P (error_Comp a l))
+  (error_Proj : forall n n0 : nat, P (error_Proj n n0)) (ok_arity : forall n : nat, P (ok_arity n)) =>
+fix F (a : Arity) : P a :=
+  match a as a0 return P a0 with
+  | Cobham.error_Rec a0 a1 a2 a3 => error_Rec a0 (F a0) a1 (F a1) a2 (F a2) a3 (F a3)
+  | Cobham.error_Comp a0 l => error_Comp a0 (F a0) l
+  | Cobham.error_Proj n n0 => error_Proj n n0
+  | Cobham.ok_arity n => ok_arity n
+  end.
+
+Arguments Arity_rect (P error_Rec error_Comp error_Proj ok_arity)%_function_scope a.
+Register Scheme Arity_rect as rect_dep for Arity.
+
+Definition Arity_ind :=
+fun (P : Arity -> Prop)
+  (error_Rec : forall a : Arity,
+               P a ->
+               forall a0 : Arity,
+               P a0 -> forall a1 : Arity, P a1 -> forall a2 : Arity, P a2 -> P (error_Rec a a0 a1 a2))
+  (error_Comp : forall a : Arity, P a -> forall l : list Arity, P (error_Comp a l))
+  (error_Proj : forall n n0 : nat, P (error_Proj n n0)) (ok_arity : forall n : nat, P (ok_arity n)) =>
+fix F (a : Arity) : P a :=
+  match a as a0 return P a0 with
+  | Cobham.error_Rec a0 a1 a2 a3 => error_Rec a0 (F a0) a1 (F a1) a2 (F a2) a3 (F a3)
+  | Cobham.error_Comp a0 l => error_Comp a0 (F a0) l
+  | Cobham.error_Proj n n0 => error_Proj n n0
+  | Cobham.ok_arity n => ok_arity n
+  end.
+
+Arguments Arity_ind (P error_Rec error_Comp error_Proj ok_arity)%_function_scope a.
+Register Scheme Arity_ind as ind_dep for Arity.
+
+Definition Arity_rec :=
+fun (P : Arity -> Set)
+  (error_Rec : forall a : Arity,
+               P a ->
+               forall a0 : Arity,
+               P a0 -> forall a1 : Arity, P a1 -> forall a2 : Arity, P a2 -> P (error_Rec a a0 a1 a2))
+  (error_Comp : forall a : Arity, P a -> forall l : list Arity, P (error_Comp a l))
+  (error_Proj : forall n n0 : nat, P (error_Proj n n0)) (ok_arity : forall n : nat, P (ok_arity n)) =>
+fix F (a : Arity) : P a :=
+  match a as a0 return P a0 with
+  | Cobham.error_Rec a0 a1 a2 a3 => error_Rec a0 (F a0) a1 (F a1) a2 (F a2) a3 (F a3)
+  | Cobham.error_Comp a0 l => error_Comp a0 (F a0) l
+  | Cobham.error_Proj n n0 => error_Proj n n0
+  | Cobham.ok_arity n => ok_arity n
+  end.
+
+Arguments Arity_rec (P error_Rec error_Comp error_Proj ok_arity)%_function_scope a.
+Register Scheme Arity_rec as rec_dep for Arity.
+
+Definition Arity_sind :=
+fun (P : Arity -> SProp)
+  (error_Rec : forall a : Arity,
+               P a ->
+               forall a0 : Arity,
+               P a0 -> forall a1 : Arity, P a1 -> forall a2 : Arity, P a2 -> P (error_Rec a a0 a1 a2))
+  (error_Comp : forall a : Arity, P a -> forall l : list Arity, P (error_Comp a l))
+  (error_Proj : forall n n0 : nat, P (error_Proj n n0)) (ok_arity : forall n : nat, P (ok_arity n)) =>
+fix F (a : Arity) : P a :=
+  match a as a0 return P a0 with
+  | Cobham.error_Rec a0 a1 a2 a3 => error_Rec a0 (F a0) a1 (F a1) a2 (F a2) a3 (F a3)
+  | Cobham.error_Comp a0 l => error_Comp a0 (F a0) l
+  | Cobham.error_Proj n n0 => error_Proj n n0
+  | Cobham.ok_arity n => ok_arity n
+  end.
+
+Arguments Arity_sind (P error_Rec error_Comp error_Proj ok_arity)%_function_scope a.
+Register Scheme Arity_sind as sind_dep for Arity.
 
 Definition arity_eq (a1 a2 : Arity) :=
   match a1, a2 with
@@ -95,8 +261,7 @@ Qed.
 
 Lemma arity_eq_refl : forall n, arity_eq (ok_arity n) (ok_arity n) = true.
 Proof.
-  intros; case (ok_arity n); simpl; intros.
-  rewrite beq_nat_true_iff; trivial.
+  intros; simpl; apply Nat.eqb_refl.
 Qed.
 
 Fixpoint arity (e : Cobham) : Arity :=
@@ -463,7 +628,7 @@ Proof.
  rewrite Sem_add_zero with (n := S n); trivial.
  rewrite Sem_add_zero with (e := j) (n := S n); trivial.
  apply H13; trivial.
- rewrite app_length, map_length, seq_length.
+ rewrite length_app, length_map, length_seq.
  omega.
  simpl.
  rewrite H, H0, H1, H2.
@@ -473,15 +638,15 @@ Proof.
  rewrite <- Sem_remove_zero with (n := S n); trivial.
  rewrite <- Sem_remove_zero with (n := S n); trivial.
  apply H13; trivial; trivial.
- rewrite firstn_length.
+ rewrite length_firstn.
  rewrite min_l; trivial; omega.
- rewrite firstn_length.
+ rewrite length_firstn.
  rewrite min_l; trivial; omega.
  simpl.
  rewrite H, H0, H1, H2.
  repeat rewrite <- beq_nat_refl; simpl.
  trivial.
- rewrite firstn_length.
+ rewrite length_firstn.
  rewrite min_l; trivial; omega.
 
  split.
@@ -551,12 +716,12 @@ Proof.
  trivial.
  
  decompose [and] H; clear H.
- apply le_trans with (1 := H5 xl).
+ apply Nat.le_trans with (1 := H5 xl).
  apply IHe4; trivial.
  rewrite pplus_correct.
  rewrite pcst_correct.
  rewrite pcomp_correct.
- eapply le_trans.
+ eapply Nat.le_trans.
  apply IHe.
  tauto.
  repeat rewrite map_map.

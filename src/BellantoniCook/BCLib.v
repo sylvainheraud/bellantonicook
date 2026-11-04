@@ -1,6 +1,6 @@
 (** A library of Bellantoni-Cook functions on bitstrings without numerical interpretation *)
 
-Require Import Bool Arith Even List.
+From Stdlib Require Import Bool Arith PeanoNat List.
 Require Import BellantoniCook.Lib BellantoniCook.Bitstring BellantoniCook.BC.
 
 (** * Swapping of two arguments
@@ -114,7 +114,7 @@ rewrite Hx, Hg, Hh0, Hh1.
 simpl.
 do 2 rewrite <- beq_nat_refl.
 simpl.
-do 2 rewrite map_length, seq_length.
+do 2 rewrite length_map, length_seq.
 do 2 rewrite <- beq_nat_refl.
 simpl.
 match goal with
@@ -189,14 +189,14 @@ rewrite map_proj_seq_normal.
 rewrite map_proj_seq_safe.
 f_equal.
 subst n.
-rewrite minus_diag.
+rewrite Nat.sub_diag.
 simpl.
 rewrite app_nil_r.
 rewrite <- (app_nil_r vnl) at 2.
 apply firstn_app.
 f_equal.
 subst s.
-rewrite minus_diag.
+rewrite Nat.sub_diag.
 simpl.
 rewrite app_nil_r.
 rewrite <- (app_nil_r vsl) at 2.
@@ -205,14 +205,14 @@ rewrite map_proj_seq_normal.
 rewrite map_proj_seq_safe.
 f_equal.
 subst n.
-rewrite minus_diag.
+rewrite Nat.sub_diag.
 simpl.
 rewrite app_nil_r.
 rewrite <- (app_nil_r vnl) at 2.
 apply firstn_app.
 f_equal.
 subst s.
-rewrite minus_diag.
+rewrite Nat.sub_diag.
 simpl.
 rewrite app_nil_r.
 rewrite <- (app_nil_r vsl) at 2.
@@ -255,7 +255,7 @@ Proof.
 simpl.
 rewrite Hg, Hh.
 simpl.
-do 2 rewrite map_length, seq_length.
+do 2 rewrite length_map, length_seq.
 do 2 rewrite <- beq_nat_refl.
 simpl.
 rewrite <- beq_nat_refl.
@@ -363,7 +363,7 @@ rewrite <- (
 );rewrite map_proj_seq_safe; simpl.
 f_equal.
 subst s.
-rewrite minus_diag.
+rewrite Nat.sub_diag.
 simpl.
 rewrite app_nil_r.
 rewrite <- (app_nil_r vsl) at 2.
@@ -391,7 +391,7 @@ rewrite <- (
 );rewrite map_proj_seq_safe; simpl.
 f_equal.
 subst s.
-rewrite minus_diag.
+rewrite Nat.sub_diag.
 simpl.
 rewrite app_nil_r.
 rewrite <- (app_nil_r vsl) at 2.
@@ -417,7 +417,7 @@ Proof.
 simpl.
 rewrite Hx, Hg, Hh.
 simpl.
-do 4 rewrite map_length, seq_length.
+do 4 rewrite length_map, length_seq.
 do 2 rewrite <- beq_nat_refl.
 simpl.
 rewrite <- beq_nat_refl.
@@ -545,20 +545,20 @@ rewrite sem_comp, rec1_correct; simpl.
 f_equal.
 rewrite map_proj_seq_normal.
 subst n.
-rewrite minus_diag.
+rewrite Nat.sub_diag.
 simpl.
 rewrite app_nil_r.
 rewrite <- (app_nil_r vnl) at 2.
 apply firstn_app.
 rewrite map_proj_seq_safe.
 subst s.
-rewrite minus_diag.
+rewrite Nat.sub_diag.
 simpl.
 rewrite app_nil_r.
 rewrite <- (app_nil_r vsl) at 2.
 apply firstn_app.
-rewrite map_length, map_length, seq_length; reflexivity.
-rewrite map_length, map_length, seq_length; reflexivity.
+rewrite length_map, length_map, length_seq; reflexivity.
+rewrite length_map, length_map, length_seq; reflexivity.
 Qed.
 
 
@@ -614,27 +614,19 @@ Lemma parity_correct_even v :
   bs2bool (sem parity_e nil [v]) = false ->
   even (bs2nat v).
 Proof.
-  destruct v; simpl; intros.
-  apply even_O.
-  destruct b; simpl in *.
-  discriminate.
-  cutrewrite (bs2nat v + (bs2nat v + 0) = 2 * (bs2nat v)).
-  auto with arith.
-  ring.
+  destruct v as [|b v]; simpl; intros H.
+  - apply even_O.
+  - destruct b; simpl in H; [discriminate|].
+    apply Nat.Even_alt_Even. exists (bs2nat v). lia.
 Qed.
 
 Lemma parity_correct_odd v :
   bs2bool (sem parity_e nil [v]) = true ->
   odd (bs2nat v).
 Proof.
-  destruct v; simpl; intros.
-  discriminate.
-  cutrewrite (bs2nat v + (bs2nat v + 0) = (2 * (bs2nat v))).
-  destruct b.
-  apply odd_S.
-  auto with arith.
-  simpl in H; discriminate.
-  omega.
+  destruct v as [|b v]; simpl; intros H; [discriminate|].
+  destruct b; simpl in H; [|discriminate].
+  apply Nat.Odd_alt_Odd. exists (bs2nat v). lia.
 Qed.
 
 (** * Functions P, P', Y and I as defined by Bellantoni and Cook
@@ -735,7 +727,7 @@ Qed.
 Lemma Y_refl x y : Y x x y = y.
 Proof.
  intros; unfold Y, P.
- rewrite length_skipn, minus_diag; simpl; trivial.
+ rewrite length_skipn, Nat.sub_diag; simpl; trivial.
 Qed.
 
 Lemma Y_nil_length x y z :
@@ -756,6 +748,7 @@ Qed.
 
 Lemma Y_le : forall u w y , length u <= length w ->
    length (Y u w y) <= length (Y w w y).
+Proof.
  intros.
  repeat rewrite Y_skipn.
  repeat rewrite skipn_length.

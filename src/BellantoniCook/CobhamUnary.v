@@ -1,4 +1,4 @@
-Require Import Arith List.
+From Stdlib Require Import Arith List.
 Require Import BellantoniCook.Lib BellantoniCook.MultiPoly BellantoniCook.Cobham BellantoniCook.CobhamLib.
 
 Lemma Zero_correct n l: 
@@ -61,17 +61,17 @@ Proof.
   rewrite Succ_correct; simpl; auto.
 Qed.
 
-Notation Plus_e := App_e.
+Abbreviation Plus_e := App_e.
 
-Notation arity_Plus := arity_App.
+Abbreviation arity_Plus := arity_App.
 
-Notation rec_bounded_Plus := rec_bounded_App.
+Abbreviation rec_bounded_Plus := rec_bounded_App.
 
 Lemma Plus_correct : forall l,
   length (Sem Plus_e l) = length (hd nil l) + length (hd nil (tl l)).
 Proof.
   intro l; rewrite App_correct.
-  apply app_length.
+  apply length_app.
 Qed.
 
 Opaque Plus_e.
@@ -128,10 +128,10 @@ Proof.
   repeat (split; trivial); intros; simpl;
   destruct l; simpl; try omega; rewrite length_smash';
   induction l; simpl; try omega; case a; simpl; rewrite length_smash'; try omega;
-  rewrite App_correct; simpl; simpl_list; eapply le_trans.
-  apply plus_le_compat_r;  apply IHl; simpl; omega.
+  rewrite App_correct; simpl; simpl_list; eapply Nat.le_trans.
+  apply Nat.add_le_mono_r;  apply IHl; simpl; omega.
   simpl; omega.
-  apply plus_le_compat_r;  apply IHl; simpl; omega.
+  apply Nat.add_le_mono_r;  apply IHl; simpl; omega.
   simpl; omega.
 Qed.
 

@@ -1,4 +1,4 @@
-Require Import Arith Div2 List.
+From Stdlib Require Import Arith PeanoNat List.
 Require Import BellantoniCook.Lib BellantoniCook.Bitstring BellantoniCook.Cobham BellantoniCook.CobhamLib.
 
 Opaque bs2nat.
@@ -23,7 +23,7 @@ Lemma Smash_correct : forall l,
   bs2nat (Sem Smash l) = power 2 (length (hd nil l) * length (hd nil (tl l))).
 Proof.
   intros [ | u [ | v l] ]; trivial; simpl.
-  rewrite mult_0_r; simpl.
+  rewrite Nat.mul_0_r; simpl.
   induction u as [ | [ | ] u IH]; trivial.
   apply bs2nat_smash_bs.
 Qed.
@@ -207,8 +207,8 @@ Lemma rec_bounded_Succ :
   rec_bounded Succ_e.
 Proof.
  simpl; intuition.
- eapply le_trans.
- eapply le_trans.
+ eapply Nat.le_trans.
+ eapply Nat.le_trans.
  2:apply length_Succ.
  simpl; trivial.
  trivial.
@@ -565,11 +565,11 @@ simpl.
 induction v as [ | [ | ] v IH].
 trivial.
 simpl.
-eapply le_trans.
+eapply Nat.le_trans.
 apply length_Succ.
 simpl; omega.
 simpl.
-eapply le_trans.
+eapply Nat.le_trans.
 apply length_Succ.
 simpl; omega.
 Qed.
@@ -816,21 +816,21 @@ simpl.
 induction v as [ | [ | ] v IH]; simpl.
 rewrite length_smash.
 simpl.
-rewrite mult_1_r.
-eapply le_trans; [idtac | apply le_n_S; apply le_length_Succ].
+rewrite Nat.mul_1_r.
+eapply Nat.le_trans; [idtac | apply le_n_S; apply le_length_Succ].
 omega.
 rewrite length_smash.
 simpl.
 apply le_n_S.
-rewrite <- (mult_1_l (length v)).
-apply mult_le_compat.
+rewrite <- (Nat.mul_1_l (length v)).
+apply Nat.mul_le_mono.
 apply le_1_length_Succ.
 omega.
 rewrite length_smash.
 simpl.
 apply le_n_S.
-rewrite <- (mult_1_l (length v)).
-apply mult_le_compat.
+rewrite <- (Nat.mul_1_l (length v)).
+apply Nat.mul_le_mono.
 apply le_1_length_Succ.
 omega.
 Qed.
@@ -1044,7 +1044,7 @@ intuition.
 destruct l as [ | u [ | v l] ]; simpl.
 omega.
 rewrite length_smash; simpl.
-rewrite mult_1_r.
+rewrite Nat.mul_1_r.
 induction u as [ | [ | ] u IH]; simpl; omega.
 rewrite length_smash', length_smash; simpl.
 induction u as [ | [ | ] u IH]; simpl; omega.
@@ -1057,7 +1057,7 @@ Proof.
 destruct l as [ | u [ | v l] ].
 trivial.
 simpl.
-rewrite bs2nat_nil, mult_0_r.
+rewrite bs2nat_nil, Nat.mul_0_r.
 induction u as [ | [ | ] u IH].
 trivial.
 simpl.
@@ -1068,9 +1068,9 @@ rewrite bs2nat_false.
 omega.
 induction u as [ | [ | ] u IH]; simpl in *.
 trivial.
-rewrite bs2nat_false, plus_0_r, IH.
+rewrite bs2nat_false, Nat.add_0_r, IH.
 ring.
-rewrite bs2nat_false, plus_0_r, IH.
+rewrite bs2nat_false, Nat.add_0_r, IH.
 ring.
 Qed.
 
@@ -1386,13 +1386,13 @@ rewrite <- hd_nth_0.
 induction (hd nil l); simpl.
 rewrite Zero_correct_bs; simpl; auto with arith.
 case a.
-eapply le_trans.
+eapply Nat.le_trans.
 apply PlusOneMinusMod2_length.
 simpl.
 rewrite length_smash'.
 rewrite length_Repeat.
 omega.
-eapply le_trans.
+eapply Nat.le_trans.
 apply PlusOneMinusMod2_length.
 simpl.
 rewrite length_smash'.
@@ -1478,13 +1478,13 @@ Proof.
  rewrite bs2nat_nil; trivial.
  case_eq (length x - length y); intros.
  rewrite H0 in H.
- elimtype False; omega.
+ exfalso; omega.
  case_eq (leb (length z) n); intros.
  apply leb_complete in H1.
  rewrite bs2nat_false, IHz; auto.
  omega.
  apply leb_complete_conv in H1.
- elimtype False; omega.
+ exfalso; omega.
 Qed.
 
 Lemma skipn_roseS : forall x y z,
@@ -1505,7 +1505,7 @@ Proof.
   rewrite IHz;[ | omega ]; clear IHz.
   f_equal.
   destruct x; simpl in *.
-  elimtype False; omega.
+  exfalso; omega.
   destruct y; simpl in *.
   discriminate.
   destruct z; simpl.
@@ -1523,7 +1523,7 @@ Proof.
   destruct x; simpl in *.
   discriminate.
   destruct y; simpl in *.
-  elimtype False; omega.
+  exfalso; omega.
   destruct z; simpl.
   rewrite <- minus_n_O; trivial.
   cutrewrite (length x - length z = S (length x - S (length z))).
